@@ -227,8 +227,8 @@ export function LessonDetailScreen() {
           <p className={styles.eyebrow}>Flashcards</p>
           <h2>Lesson cards</h2>
           <p>
-            Manual My Language → Dutch card creation is the next roadmap
-            milestone.
+            Create and manage {myLanguageLabels[deck.myLanguage]} → Dutch
+            flashcards for this lesson.
           </p>
         </div>
         <Link to={`/decks/${deck.id}/cards?lessonId=${lesson.id}`}>

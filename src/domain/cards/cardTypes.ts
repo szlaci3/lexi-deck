@@ -1,6 +1,13 @@
 export type CardType = 'myLanguageToDutch'
 export type DutchArticle = 'de' | 'het' | 'none' | 'unknown'
 
+export const dutchArticleLabels: Record<DutchArticle, string> = {
+  de: 'de',
+  het: 'het',
+  none: 'No article',
+  unknown: 'Unknown article',
+}
+
 export type Card = {
   id: string
   deckId: string
@@ -19,3 +26,13 @@ export type Card = {
   suspendedAt?: string
   archivedAt?: string
 }
+
+export type CreateCardInput = Pick<
+  Card,
+  'deckId' | 'lessonId' | 'frontText' | 'backDutch' | 'article' | 'notes'
+>
+
+export type UpdateCardInput = Pick<
+  Card,
+  'lessonId' | 'frontText' | 'backDutch' | 'article' | 'notes'
+>
