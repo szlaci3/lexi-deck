@@ -1,0 +1,28 @@
+.preview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.preview div {
+  padding: var(--space-3);
+  display: grid;
+  gap: var(--space-1);
+  background: var(--color-canvas);
+  border-radius: var(--radius-md);
+}
+
+.preview span {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.preview strong {
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 42rem) {
+  .preview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

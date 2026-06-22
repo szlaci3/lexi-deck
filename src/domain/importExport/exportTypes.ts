@@ -26,3 +26,44 @@ export type ExportBundleV1 = {
 }
 
 export type ExportBundle = ExportBundleV1
+
+export type ExportTables = Omit<ExportBundleV1, 'manifest'>
+
+export type ImportPreview = {
+  exportedAt: string
+  exportVersion: number
+  mediaIncluded: boolean
+  deckCount: number
+  lessonCount: number
+  cardCount: number
+  reviewStateCount: number
+  reviewLogCount: number
+  settingsCount: number
+  knownWordCount: number
+}
+
+export type ImportSummary = {
+  decks: number
+  lessons: number
+  cards: number
+  reviewStates: number
+  reviewLogs: number
+  settings: number
+  knownWords: number
+}
+
+export type MergeSummary = ImportSummary & {
+  renamedDecks: number
+  remappedIds: number
+  skippedExactCards: number
+  possibleDuplicateCards: number
+  skippedSettings: number
+  skippedKnownWords: number
+}
+
+export type MergePlan = {
+  bundle: ExportBundleV1
+  summary: MergeSummary
+  renamedDecks: Array<{ originalName: string; importedName: string }>
+  possibleDuplicateCardIds: string[]
+}

@@ -1,0 +1,121 @@
+import { describe, expect, it } from 'vitest'
+import { buildExportBundle } from './exportDatabase'
+import {
+  parseAndValidateImportJson,
+  validateImportBundle,
+} from './validateImportBundle'
+
+const timestamp = '2026-06-23T08:00:00.000Z'
+const validBundle = buildExportBundle(
+  {
+    decks: [],
+    lessons: [],
+    cards: [],
+    reviewStates: [],
+    reviewLogs: [],
+    settings: [],
+    knownWords: [],
+  },
+  '0.5.0',
+  timestamp,
+)
+
+describe('validateImportBundle', () => {
+  it('accepts a valid export bundle', () => {
+    expect(validateImportBundle(validBundle)).toEqual({
+      valid: true,
+      bundle: validBundle,
+    })
+  })
+
+  it('rejects a missing manifest', () => {
+    const result = validateImportBundle({ ...validBundle, manifest: undefined })
+    expect(result.valid).toBe(false)
+  })
+
+  it('rejects invalid JSON', () => {
+    expect(parseAndValidateImportJson('{not json')).toEqual({
+      valid: false,
+      errors: ['The selected file is not valid JSON.'],
+    })
+  })
+
+  it('rejects unsupported export versions', () => {
+    const result = validateImportBundle({
+      ...validBundle,
+      manifest: { ...validBundle.manifest, exportVersion: 2 },
+    })
+    expect(result.valid).toBe(false)
+    if (!result.valid) {
+      expect(result.errors).toContain('This export version is not supported.')
+    }
+  })
+
+  it('rejects missing required tables', () => {
+    const withoutCards = { ...validBundle } as Partial<typeof validBundle>
+    delete withoutCards.cards
+    const result = validateImportBundle(withoutCards)
+    expect(result.valid).toBe(false)
+  })
+
+  it('rejects records with invalid required fields', () => {
+    const result = validateImportBundle({
+      ...validBundle,
+      decks: [{ id: 'deck-1' }],
+    })
+    expect(result.valid).toBe(false)
+  })
+
+  it('rejects cards whose lesson is outside their deck', () => {
+    const result = validateImportBundle({
+      ...validBundle,
+      decks: [
+        {
+          id: 'deck-1',
+          name: 'Deck',
+          description: 'Description',
+          myLanguage: 'en',
+          targetLanguage: 'nl',
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        },
+        {
+          id: 'deck-2',
+          name: 'Deck 2',
+          description: 'Description',
+          myLanguage: 'en',
+          targetLanguage: 'nl',
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        },
+      ],
+      lessons: [
+        {
+          id: 'lesson-1',
+          deckId: 'deck-1',
+          title: 'Lesson',
+          description: 'Description',
+          order: 1,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        },
+      ],
+      cards: [
+        {
+          id: 'card-1',
+          deckId: 'deck-2',
+          lessonId: 'lesson-1',
+          cardType: 'myLanguageToDutch',
+          frontText: 'house',
+          backDutch: 'huis',
+          backMyLanguage: 'house',
+          article: 'het',
+          notes: '',
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        },
+      ],
+    })
+    expect(result.valid).toBe(false)
+  })
+})
