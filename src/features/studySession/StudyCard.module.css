@@ -1,0 +1,92 @@
+.card {
+  min-height: 28rem;
+  padding: clamp(var(--space-6), 7vw, var(--space-10));
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.context {
+  width: 100%;
+  margin-bottom: auto;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 750;
+}
+
+.prompt,
+.answer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.prompt > span,
+.answer > span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.prompt > strong,
+.answer > strong {
+  margin-top: var(--space-3);
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 8vw, 5rem);
+  line-height: 1.03;
+}
+
+.revealButton,
+.answer button {
+  min-height: 3rem;
+  padding: 0 var(--space-6);
+  font: inherit;
+  font-weight: 850;
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.revealButton {
+  margin: auto 0 0;
+  color: var(--color-on-accent);
+  background: var(--color-accent-strong);
+}
+
+.answer {
+  margin: var(--space-8) 0 auto;
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-border);
+}
+
+.answer > p {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-muted);
+}
+
+.answer button {
+  margin-top: var(--space-6);
+  color: var(--color-ink);
+  background: var(--color-accent-light);
+}
+
+.answer button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.answer .audioError {
+  color: var(--color-danger);
+}

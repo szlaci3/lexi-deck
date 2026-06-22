@@ -1,0 +1,127 @@
+.page {
+  width: min(100%, 54rem);
+  margin: 0 auto;
+  display: grid;
+  gap: var(--space-5);
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.header h1 {
+  margin: var(--space-1) 0 0;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+}
+
+.header > span {
+  padding: var(--space-2) var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-pill);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-accent-strong);
+  font-size: var(--font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.summary,
+.emptyState,
+.errorState {
+  min-height: 28rem;
+  padding: clamp(var(--space-7), 8vw, var(--space-12));
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.summary h1,
+.emptyState h1,
+.errorState h1 {
+  margin: var(--space-2) 0;
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  line-height: 1;
+}
+
+.summary > p:not(.eyebrow),
+.emptyState > p:not(.eyebrow),
+.errorState > p {
+  color: var(--color-text-muted);
+}
+
+.summary > a,
+.emptyState > a,
+.errorState > a {
+  min-height: 3rem;
+  margin-top: var(--space-6);
+  padding: 0 var(--space-6);
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-on-accent);
+  font-weight: 850;
+  text-decoration: none;
+  background: var(--color-accent-strong);
+  border-radius: var(--radius-pill);
+}
+
+.summaryGrid {
+  width: 100%;
+  margin-top: var(--space-6);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.summaryGrid article {
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-1);
+  background: var(--color-canvas);
+  border-radius: var(--radius-md);
+}
+
+.summaryGrid span {
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+}
+
+.summaryGrid strong {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+}
+
+.status {
+  margin-top: var(--space-10);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.reviewError {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 38rem) {
+  .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -47,6 +47,7 @@
 }
 
 .createButton,
+.studyButton,
 .emptyState button {
   min-height: 3rem;
   padding: 0 var(--space-5);
@@ -58,6 +59,27 @@
   border: 0;
   border-radius: var(--radius-pill);
   cursor: pointer;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  flex: 0 0 auto;
+}
+
+.studyButton {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-ink);
+  text-decoration: none;
+  background: var(--color-accent-light);
+}
+
+.createButton {
+  color: var(--color-on-dark);
+  background: transparent;
+  border: 1px solid rgb(255 255 255 / 32%);
 }
 
 .deckSection {
@@ -240,7 +262,9 @@
 }
 
 @media (max-width: 28rem) {
-  .createButton {
+  .heroActions,
+  .createButton,
+  .studyButton {
     width: 100%;
   }
 

@@ -22,6 +22,10 @@ export function DashboardScreen() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+  const totalDue = summaries.reduce(
+    (total, summary) => total + summary.dueCount,
+    0,
+  )
 
   const loadDecks = useCallback(async () => {
     setLoadError('')
@@ -122,9 +126,18 @@ export function DashboardScreen() {
             English or Simplified Chinese.
           </p>
         </div>
-        <button className={styles.createButton} type="button" onClick={openCreateForm}>
-          Create deck
-        </button>
+        <div className={styles.heroActions}>
+          <Link className={styles.studyButton} to="/study">
+            Study {totalDue} due
+          </Link>
+          <button
+            className={styles.createButton}
+            type="button"
+            onClick={openCreateForm}
+          >
+            Create deck
+          </button>
+        </div>
       </section>
 
       {isFormOpen ? (

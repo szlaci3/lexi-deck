@@ -8,6 +8,7 @@ import { validateDeckInput } from '../../domain/decks/deckValidation'
 import { nowIso } from '../../utils/dates'
 import { createId } from '../../utils/ids'
 import { db } from '../dexie'
+import { countDueCards } from './reviewRepository'
 
 export class DeckNotFoundError extends Error {
   constructor() {
@@ -139,8 +140,7 @@ async function buildDeckSummary(deck: Deck): Promise<DeckSummary> {
       .filter((card) => !card.archivedAt)
       .toArray(),
   ])
-  const activeCards = cards.filter((card) => !card.suspendedAt)
-  const dueCount = await countDueCards(activeCards.map((card) => card.id))
+  const dueCount = await countDueCards(nowIso(), deck.id)
 
   return {
     deck,
@@ -155,18 +155,5 @@ async function countActiveCardsByDeckId(deckId: string): Promise<number> {
     .where('deckId')
     .equals(deckId)
     .filter((card) => !card.archivedAt)
-    .count()
-}
-
-async function countDueCards(cardIds: string[]): Promise<number> {
-  if (cardIds.length === 0) {
-    return 0
-  }
-
-  const now = nowIso()
-  return db.reviewStates
-    .where('cardId')
-    .anyOf(cardIds)
-    .filter((reviewState) => reviewState.dueAt <= now)
     .count()
 }

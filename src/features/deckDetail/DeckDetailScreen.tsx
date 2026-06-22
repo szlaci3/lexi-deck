@@ -231,7 +231,7 @@ export function DeckDetailScreen() {
         </div>
         <div className={styles.heroActions}>
           <Link className={styles.studyButton} to={`/study/deck/${deck.id}`}>
-            Study this deck
+            Study {dueCount} due
           </Link>
           <button type="button" onClick={() => setIsEditingDeck(true)}>
             Edit deck

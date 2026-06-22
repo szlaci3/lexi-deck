@@ -1,5 +1,12 @@
 export type SrsRating = 'again' | 'hard' | 'good' | 'easy'
 
+export const srsRatingLabels: Record<SrsRating, string> = {
+  again: 'Again',
+  hard: 'Hard',
+  good: 'Good',
+  easy: 'Easy',
+}
+
 export type ReviewState = {
   id: string
   cardId: string
@@ -24,4 +31,15 @@ export type ReviewLog = {
   previousIntervalDays: number
   nextIntervalDays: number
   responseTimeMs?: number
+}
+
+export type ScheduleReviewInput = {
+  reviewState: ReviewState
+  rating: SrsRating
+  reviewedAt: string
+}
+
+export type ScheduledReviewResult = {
+  reviewState: ReviewState
+  intervalLabel: string
 }

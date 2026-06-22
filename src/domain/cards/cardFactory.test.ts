@@ -30,6 +30,8 @@ describe('createCardRecords', () => {
       cardId: 'card-1',
       dueAt: timestamp,
       intervalDays: 0,
+      stability: 0,
+      difficulty: 5,
       lapses: 0,
       reviewCount: 0,
       createdAt: timestamp,
