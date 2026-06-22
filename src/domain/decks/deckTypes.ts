@@ -1,6 +1,15 @@
 export type MyLanguage = 'en' | 'zh-Hans'
 export type TargetLanguage = 'nl'
 
+export const myLanguageLabels: Record<MyLanguage, string> = {
+  en: 'English',
+  'zh-Hans': 'Simplified Chinese',
+}
+
+export const targetLanguageLabels: Record<TargetLanguage, string> = {
+  nl: 'Dutch',
+}
+
 export type Deck = {
   id: string
   name: string
@@ -14,3 +23,10 @@ export type Deck = {
 
 export type CreateDeckInput = Pick<Deck, 'name' | 'description' | 'myLanguage'>
 export type UpdateDeckInput = Partial<CreateDeckInput>
+
+export type DeckSummary = {
+  deck: Deck
+  lessonCount: number
+  cardCount: number
+  dueCount: number
+}

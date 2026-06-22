@@ -1,0 +1,128 @@
+.form {
+  padding: var(--space-7);
+  display: grid;
+  gap: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.heading h2 {
+  margin: var(--space-1) 0 0;
+  font-size: clamp(1.5rem, 5vw, 2rem);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-accent-strong);
+  font-size: var(--font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-2);
+  font-weight: 800;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  min-height: 3rem;
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field input[aria-invalid='true'],
+.field textarea[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.hint,
+.error {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.hint {
+  color: var(--color-text-muted);
+}
+
+.error,
+.submitError {
+  color: var(--color-danger);
+}
+
+.submitError {
+  margin: 0;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.primaryButton,
+.secondaryButton,
+.closeButton {
+  min-height: 2.75rem;
+  padding: 0 var(--space-5);
+  font: inherit;
+  font-weight: 850;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.primaryButton {
+  color: var(--color-on-accent);
+  background: var(--color-accent-strong);
+  border: 1px solid var(--color-accent-strong);
+}
+
+.secondaryButton,
+.closeButton {
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border);
+}
+
+.closeButton {
+  min-height: 2.5rem;
+  padding-inline: var(--space-4);
+}
+
+.primaryButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 32rem) {
+  .form {
+    padding: var(--space-5);
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
