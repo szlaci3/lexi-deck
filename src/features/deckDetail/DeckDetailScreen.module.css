@@ -142,15 +142,17 @@
   font-size: 1.8rem;
 }
 
-.sectionHeading > span {
-  display: grid;
-  width: 2.5rem;
-  height: 2.5rem;
-  place-items: center;
-  color: var(--color-accent-strong);
+.sectionHeading > button,
+.emptyLessons button {
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
+  color: var(--color-on-accent);
+  font: inherit;
   font-weight: 850;
-  background: var(--color-accent-soft);
-  border-radius: 50%;
+  background: var(--color-accent-strong);
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
 }
 
 .emptyLessons {
@@ -174,6 +176,98 @@
   max-width: 28rem;
   margin: var(--space-2) auto 0;
   color: var(--color-text-muted);
+}
+
+.emptyLessons button {
+  margin: var(--space-5) auto 0;
+}
+
+.lessonForm {
+  margin-top: var(--space-5);
+}
+
+.lessonList {
+  margin-top: var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.lessonCard {
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.lessonLink {
+  padding: var(--space-5);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.lessonLink > span {
+  color: var(--color-accent-strong);
+  font-size: var(--font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lessonLink h3 {
+  margin: var(--space-2) 0;
+  font-size: 1.35rem;
+}
+
+.lessonLink > p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.lessonLink dl {
+  margin: var(--space-4) 0 0;
+  display: flex;
+  gap: var(--space-6);
+}
+
+.lessonLink dl div {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.lessonLink dt {
+  color: var(--color-text-muted);
+}
+
+.lessonLink dd {
+  margin: 0;
+  font-weight: 850;
+}
+
+.lessonActions {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-2);
+  border-left: 1px solid var(--color-border);
+}
+
+.lessonActions button {
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 800;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.lessonActions .archiveLessonButton {
+  color: var(--color-danger);
 }
 
 .quickLinks {
@@ -271,5 +365,28 @@
 
   .summaryGrid {
     grid-template-columns: 1fr;
+  }
+
+  .sectionHeading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .sectionHeading > button {
+    width: 100%;
+  }
+
+  .lessonCard {
+    grid-template-columns: 1fr;
+  }
+
+  .lessonActions {
+    flex-direction: row;
+    border-top: 1px solid var(--color-border);
+    border-left: 0;
+  }
+
+  .lessonActions button {
+    flex: 1;
   }
 }

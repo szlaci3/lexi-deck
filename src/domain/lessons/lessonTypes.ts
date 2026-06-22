@@ -8,3 +8,12 @@ export type Lesson = {
   updatedAt: string
   archivedAt?: string
 }
+
+export type CreateLessonInput = Pick<Lesson, 'title' | 'description'>
+export type UpdateLessonInput = Partial<CreateLessonInput>
+
+export type LessonSummary = {
+  lesson: Lesson
+  cardCount: number
+  dueCount: number
+}

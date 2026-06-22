@@ -6,19 +6,34 @@ import {
   updateDeck,
 } from '../../db/repositories/deckRepository'
 import {
+  archiveLesson,
+  createLesson,
+  listActiveLessonSummariesByDeckId,
+  updateLesson,
+} from '../../db/repositories/lessonRepository'
+import {
   myLanguageLabels,
   targetLanguageLabels,
   type CreateDeckInput,
   type DeckSummary,
 } from '../../domain/decks/deckTypes'
+import type {
+  CreateLessonInput,
+  Lesson,
+  LessonSummary,
+} from '../../domain/lessons/lessonTypes'
 import { DeckForm } from '../dashboard/DeckForm'
+import { LessonForm } from '../lessonDetail/LessonForm'
 import styles from './DeckDetailScreen.module.css'
 
 export function DeckDetailScreen() {
   const { deckId } = useParams()
   const navigate = useNavigate()
   const [summary, setSummary] = useState<DeckSummary>()
-  const [isEditing, setIsEditing] = useState(false)
+  const [lessonSummaries, setLessonSummaries] = useState<LessonSummary[]>([])
+  const [isEditingDeck, setIsEditingDeck] = useState(false)
+  const [isLessonFormOpen, setIsLessonFormOpen] = useState(false)
+  const [editingLesson, setEditingLesson] = useState<Lesson>()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -32,11 +47,15 @@ export function DeckDetailScreen() {
     setError('')
 
     try {
-      const nextSummary = await getDeckSummary(deckId)
+      const [nextSummary, nextLessons] = await Promise.all([
+        getDeckSummary(deckId),
+        listActiveLessonSummariesByDeckId(deckId),
+      ])
       if (!nextSummary) {
         setError('This deck was not found or has been archived.')
       }
       setSummary(nextSummary)
+      setLessonSummaries(nextLessons)
     } catch (loadError: unknown) {
       setError(
         loadError instanceof Error
@@ -55,8 +74,11 @@ export function DeckDetailScreen() {
       return
     }
 
-    getDeckSummary(deckId)
-      .then((nextSummary) => {
+    Promise.all([
+      getDeckSummary(deckId),
+      listActiveLessonSummariesByDeckId(deckId),
+    ])
+      .then(([nextSummary, nextLessons]) => {
         if (!isActive) {
           return
         }
@@ -65,6 +87,7 @@ export function DeckDetailScreen() {
           setError('This deck was not found or has been archived.')
         }
         setSummary(nextSummary)
+        setLessonSummaries(nextLessons)
       })
       .catch((loadError: unknown) => {
         if (isActive) {
@@ -92,8 +115,59 @@ export function DeckDetailScreen() {
     }
 
     await updateDeck(deckId, input)
-    setIsEditing(false)
+    setIsEditingDeck(false)
     await loadDeck()
+  }
+
+  function openCreateLessonForm() {
+    setEditingLesson(undefined)
+    setIsLessonFormOpen(true)
+  }
+
+  function openEditLessonForm(lesson: Lesson) {
+    setEditingLesson(lesson)
+    setIsLessonFormOpen(true)
+  }
+
+  function closeLessonForm() {
+    setEditingLesson(undefined)
+    setIsLessonFormOpen(false)
+  }
+
+  async function saveLesson(input: CreateLessonInput) {
+    if (!deckId) {
+      return
+    }
+
+    if (editingLesson) {
+      await updateLesson(editingLesson.id, input)
+    } else {
+      await createLesson(deckId, input)
+    }
+
+    closeLessonForm()
+    await loadDeck()
+  }
+
+  async function confirmArchiveLesson(lesson: Lesson) {
+    const shouldArchive = window.confirm(
+      `Archive “${lesson.title}”? It will disappear from this deck.`,
+    )
+
+    if (!shouldArchive) {
+      return
+    }
+
+    try {
+      await archiveLesson(lesson.id)
+      await loadDeck()
+    } catch (archiveError: unknown) {
+      setError(
+        archiveError instanceof Error
+          ? archiveError.message
+          : 'The lesson could not be archived.',
+      )
+    }
   }
 
   async function confirmArchive() {
@@ -159,18 +233,18 @@ export function DeckDetailScreen() {
           <Link className={styles.studyButton} to={`/study/deck/${deck.id}`}>
             Study this deck
           </Link>
-          <button type="button" onClick={() => setIsEditing(true)}>
+          <button type="button" onClick={() => setIsEditingDeck(true)}>
             Edit deck
           </button>
         </div>
       </section>
 
-      {isEditing ? (
+      {isEditingDeck ? (
         <DeckForm
           key={deck.updatedAt}
           deck={deck}
           isLanguageLocked={cardCount > 0}
-          onCancel={() => setIsEditing(false)}
+          onCancel={() => setIsEditingDeck(false)}
           onSubmit={saveDeck}
         />
       ) : null}
@@ -201,15 +275,73 @@ export function DeckDetailScreen() {
               <p className={styles.eyebrow}>Course structure</p>
               <h2>Lessons</h2>
             </div>
-            <span>{lessonCount}</span>
+            <button type="button" onClick={openCreateLessonForm}>
+              Add lesson
+            </button>
           </div>
-          <div className={styles.emptyLessons}>
-            <strong>No lessons yet</strong>
-            <p>
-              Lesson creation is the next roadmap milestone. This deck is ready
-              for it.
-            </p>
-          </div>
+
+          {isLessonFormOpen ? (
+            <div className={styles.lessonForm}>
+              <LessonForm
+                key={editingLesson?.id ?? 'new-lesson'}
+                lesson={editingLesson}
+                onCancel={closeLessonForm}
+                onSubmit={saveLesson}
+              />
+            </div>
+          ) : null}
+
+          {lessonSummaries.length === 0 ? (
+            <div className={styles.emptyLessons}>
+              <strong>No lessons yet</strong>
+              <p>
+                Add the first lesson or textbook unit for this deck.
+              </p>
+              <button type="button" onClick={openCreateLessonForm}>
+                Create first lesson
+              </button>
+            </div>
+          ) : (
+            <div className={styles.lessonList}>
+              {lessonSummaries.map(({ lesson, cardCount: lessonCardCount, dueCount: lessonDueCount }) => (
+                <article className={styles.lessonCard} key={lesson.id}>
+                  <Link
+                    className={styles.lessonLink}
+                    to={`/decks/${deck.id}/lessons/${lesson.id}`}
+                  >
+                    <span>Lesson {lesson.order}</span>
+                    <h3>{lesson.title}</h3>
+                    <p>{lesson.description}</p>
+                    <dl>
+                      <div>
+                        <dt>Cards</dt>
+                        <dd>{lessonCardCount}</dd>
+                      </div>
+                      <div>
+                        <dt>Due</dt>
+                        <dd>{lessonDueCount}</dd>
+                      </div>
+                    </dl>
+                  </Link>
+                  <div className={styles.lessonActions}>
+                    <button
+                      type="button"
+                      onClick={() => openEditLessonForm(lesson)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className={styles.archiveLessonButton}
+                      type="button"
+                      onClick={() => void confirmArchiveLesson(lesson)}
+                    >
+                      Archive
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
 
         <aside className={styles.quickLinks}>
