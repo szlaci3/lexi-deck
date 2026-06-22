@@ -1,0 +1,125 @@
+.preview {
+  padding: var(--space-7);
+  display: grid;
+  gap: var(--space-6);
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.heading p {
+  margin: 0;
+  color: var(--color-accent-strong);
+  font-size: var(--font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.heading h2 {
+  margin: var(--space-1) 0 0;
+  font-size: 1.8rem;
+}
+
+.heading button,
+.revealButton,
+.audioButton {
+  min-height: 2.75rem;
+  padding: 0 var(--space-5);
+  font: inherit;
+  font-weight: 850;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.heading button {
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border);
+}
+
+.studyCard {
+  min-height: 20rem;
+  padding: clamp(var(--space-6), 7vw, var(--space-10));
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  background: var(--color-canvas);
+  border-radius: var(--radius-xl);
+}
+
+.studyCard > span,
+.answer > span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.studyCard > strong,
+.answer > strong {
+  margin-top: var(--space-3);
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 7vw, 4rem);
+  line-height: 1.05;
+}
+
+.revealButton {
+  margin-top: var(--space-8);
+  color: var(--color-on-accent);
+  background: var(--color-accent-strong);
+  border: 0;
+}
+
+.answer {
+  width: 100%;
+  margin-top: var(--space-7);
+  padding-top: var(--space-7);
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  border-top: 1px solid var(--color-border);
+}
+
+.answer > p {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-muted);
+}
+
+.audioButton {
+  margin-top: var(--space-6);
+  color: var(--color-ink);
+  background: var(--color-accent-light);
+  border: 0;
+}
+
+.audioButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.audioError {
+  color: var(--color-danger) !important;
+}
+
+@media (max-width: 32rem) {
+  .preview {
+    padding: var(--space-5);
+  }
+
+  .heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

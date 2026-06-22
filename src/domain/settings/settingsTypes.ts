@@ -8,3 +8,8 @@ export type AppSettings = {
   createdAt: string
   updatedAt: string
 }
+
+export type AudioSettingsInput = Pick<
+  AppSettings,
+  'autoPlayAudio' | 'preferredVoiceURI' | 'speechRate'
+>

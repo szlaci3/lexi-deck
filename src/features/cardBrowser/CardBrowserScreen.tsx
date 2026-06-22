@@ -16,6 +16,7 @@ import {
 } from '../../db/repositories/cardRepository'
 import { getDeckSummary } from '../../db/repositories/deckRepository'
 import { listActiveLessonsByDeckId } from '../../db/repositories/lessonRepository'
+import { getSettings } from '../../db/repositories/settingsRepository'
 import { getDutchDisplayText } from '../../domain/cards/cardDisplay'
 import type {
   Card,
@@ -26,13 +27,16 @@ import { myLanguageLabels, type DeckSummary } from '../../domain/decks/deckTypes
 import type { DuplicateDetectionResult } from '../../domain/duplicates/duplicateDetection'
 import { normalizeText } from '../../domain/duplicates/normalizeText'
 import type { Lesson } from '../../domain/lessons/lessonTypes'
+import type { AppSettings } from '../../domain/settings/settingsTypes'
 import { CardForm } from '../cardEditor/CardForm'
+import { CardPreview } from './CardPreview'
 import styles from './CardBrowserScreen.module.css'
 
 type CardBrowserData = {
   deckSummary: DeckSummary
   lessons: Lesson[]
   cards: Card[]
+  settings: AppSettings
 }
 
 export function CardBrowserScreen() {
@@ -47,6 +51,7 @@ export function CardBrowserScreen() {
     searchParams.get('create') === '1',
   )
   const [editingCard, setEditingCard] = useState<Card>()
+  const [previewCard, setPreviewCard] = useState<Card>()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -60,10 +65,11 @@ export function CardBrowserScreen() {
     setError('')
 
     try {
-      const [deckSummary, lessons, cards] = await Promise.all([
+      const [deckSummary, lessons, cards, settings] = await Promise.all([
         getDeckSummary(deckId),
         listActiveLessonsByDeckId(deckId),
         listActiveCardsByDeckId(deckId),
+        getSettings(),
       ])
 
       if (!deckSummary) {
@@ -72,7 +78,7 @@ export function CardBrowserScreen() {
         return
       }
 
-      setData({ deckSummary, lessons, cards })
+      setData({ deckSummary, lessons, cards, settings })
     } catch (loadError: unknown) {
       setError(
         loadError instanceof Error
@@ -95,8 +101,9 @@ export function CardBrowserScreen() {
       getDeckSummary(deckId),
       listActiveLessonsByDeckId(deckId),
       listActiveCardsByDeckId(deckId),
+      getSettings(),
     ])
-      .then(([deckSummary, lessons, cards]) => {
+      .then(([deckSummary, lessons, cards, settings]) => {
         if (!isActive) {
           return
         }
@@ -106,7 +113,7 @@ export function CardBrowserScreen() {
           return
         }
 
-        setData({ deckSummary, lessons, cards })
+        setData({ deckSummary, lessons, cards, settings })
       })
       .catch((loadError: unknown) => {
         if (isActive) {
@@ -290,6 +297,16 @@ export function CardBrowserScreen() {
         />
       ) : null}
 
+      {previewCard ? (
+        <CardPreview
+          key={previewCard.id}
+          card={previewCard}
+          deck={deck}
+          settings={data.settings}
+          onClose={() => setPreviewCard(undefined)}
+        />
+      ) : null}
+
       <section className={styles.filters} aria-label="Card filters">
         <label>
           <span>Search cards</span>
@@ -371,6 +388,9 @@ export function CardBrowserScreen() {
                   {card.notes ? <p className={styles.notes}>{card.notes}</p> : null}
                 </div>
                 <div className={styles.cardActions}>
+                  <button type="button" onClick={() => setPreviewCard(card)}>
+                    Preview
+                  </button>
                   <button type="button" onClick={() => openEditForm(card)}>
                     Edit
                   </button>
