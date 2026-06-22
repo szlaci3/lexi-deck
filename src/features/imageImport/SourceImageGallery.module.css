@@ -1,0 +1,184 @@
+.galleryArea {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.item {
+  overflow: hidden;
+  display: grid;
+  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.thumbnailButton {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  overflow: hidden;
+  background: var(--color-surface-muted);
+  border: 0;
+  cursor: zoom-in;
+}
+
+.thumbnailButton img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.itemInfo {
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-1);
+}
+
+.itemInfo strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemInfo span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.itemActions {
+  padding: var(--space-3);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.itemActions button,
+.detailHeading button,
+.detailArchiveButton {
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 800;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.itemActions .archiveButton,
+.detailArchiveButton {
+  color: var(--color-danger);
+}
+
+.detail {
+  padding: var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.detailHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.detailHeading p {
+  margin: 0;
+  color: var(--color-accent-strong);
+  font-size: var(--font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.detailHeading h3 {
+  margin: var(--space-1) 0 0;
+  font-size: 1.4rem;
+}
+
+.detail > img {
+  width: 100%;
+  max-height: 70svh;
+  object-fit: contain;
+  background: var(--color-canvas);
+  border-radius: var(--radius-md);
+}
+
+.detail dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.detail dl div {
+  padding: var(--space-3);
+  background: var(--color-canvas);
+  border-radius: var(--radius-md);
+}
+
+.detail dt {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.detail dd {
+  margin: var(--space-1) 0 0;
+  font-weight: 800;
+}
+
+.detailArchiveButton {
+  justify-self: start;
+}
+
+.emptyState {
+  min-height: 10rem;
+  padding: var(--space-6);
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background: var(--color-canvas);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.emptyState strong {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+}
+
+.emptyState p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+}
+
+.error {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 44rem) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

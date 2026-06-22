@@ -112,6 +112,10 @@ export function ImportDatabasePanel() {
         Choose backup file
         <input type="file" accept="application/json,.json" onChange={selectFile} />
       </label>
+      <p className={styles.error}>
+        Export v1 excludes media. Replacing the database will also remove
+        locally stored source images, and the safety export cannot restore them.
+      </p>
 
       {bundle ? (
         <div className={styles.flow}>

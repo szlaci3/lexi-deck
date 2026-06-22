@@ -5,7 +5,8 @@ import type { Lesson } from '../domain/lessons/lessonTypes'
 import type { AppSettings } from '../domain/settings/settingsTypes'
 import type { ReviewLog, ReviewState } from '../domain/srs/srsTypes'
 import type { KnownWord } from '../domain/vocabulary/knownWords'
-import { databaseSchemaV1 } from './schema'
+import type { SourceImage } from '../domain/media/mediaTypes'
+import { databaseSchemaV1, databaseSchemaV2 } from './schema'
 
 export class LexiDeckDatabase extends Dexie {
   decks!: EntityTable<Deck, 'id'>
@@ -15,10 +16,12 @@ export class LexiDeckDatabase extends Dexie {
   reviewLogs!: EntityTable<ReviewLog, 'id'>
   settings!: EntityTable<AppSettings, 'id'>
   knownWords!: EntityTable<KnownWord, 'id'>
+  sourceImages!: EntityTable<SourceImage, 'id'>
 
   constructor() {
     super('lexideck')
     this.version(1).stores(databaseSchemaV1)
+    this.version(2).stores(databaseSchemaV2)
   }
 }
 

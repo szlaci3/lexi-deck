@@ -8,3 +8,9 @@ export const databaseSchemaV1 = {
   settings: 'id',
   knownWords: 'id, normalizedText, article',
 } as const
+
+export const databaseSchemaV2 = {
+  ...databaseSchemaV1,
+  sourceImages:
+    'id, deckId, lessonId, [deckId+lessonId], createdAt, ocrStatus, archivedAt',
+} as const

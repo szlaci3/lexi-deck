@@ -6,6 +6,7 @@ import {
   getLessonSummary,
   updateLesson,
 } from '../../db/repositories/lessonRepository'
+import { listActiveSourceImagesByLessonId } from '../../db/repositories/sourceImageRepository'
 import {
   myLanguageLabels,
   targetLanguageLabels,
@@ -15,12 +16,16 @@ import type {
   CreateLessonInput,
   LessonSummary,
 } from '../../domain/lessons/lessonTypes'
+import type { SourceImage } from '../../domain/media/mediaTypes'
+import { SourceImageGallery } from '../imageImport/SourceImageGallery'
+import { SourceImageUploader } from '../imageImport/SourceImageUploader'
 import { LessonForm } from './LessonForm'
 import styles from './LessonDetailScreen.module.css'
 
 type LessonPageData = {
   deckSummary: DeckSummary
   lessonSummary: LessonSummary
+  sourceImages: SourceImage[]
 }
 
 export function LessonDetailScreen() {
@@ -41,9 +46,10 @@ export function LessonDetailScreen() {
     setError('')
 
     try {
-      const [deckSummary, lessonSummary] = await Promise.all([
+      const [deckSummary, lessonSummary, sourceImages] = await Promise.all([
         getDeckSummary(deckId),
         getLessonSummary(lessonId),
+        listActiveSourceImagesByLessonId(lessonId),
       ])
 
       if (
@@ -56,7 +62,7 @@ export function LessonDetailScreen() {
         return
       }
 
-      setData({ deckSummary, lessonSummary })
+      setData({ deckSummary, lessonSummary, sourceImages })
     } catch (loadError: unknown) {
       setError(
         loadError instanceof Error
@@ -75,8 +81,12 @@ export function LessonDetailScreen() {
       return
     }
 
-    Promise.all([getDeckSummary(deckId), getLessonSummary(lessonId)])
-      .then(([deckSummary, lessonSummary]) => {
+    Promise.all([
+      getDeckSummary(deckId),
+      getLessonSummary(lessonId),
+      listActiveSourceImagesByLessonId(lessonId),
+    ])
+      .then(([deckSummary, lessonSummary, sourceImages]) => {
         if (!isActive) {
           return
         }
@@ -90,7 +100,7 @@ export function LessonDetailScreen() {
           return
         }
 
-        setData({ deckSummary, lessonSummary })
+        setData({ deckSummary, lessonSummary, sourceImages })
       })
       .catch((loadError: unknown) => {
         if (isActive) {
@@ -164,6 +174,7 @@ export function LessonDetailScreen() {
 
   const { deck } = data.deckSummary
   const { lesson, cardCount, dueCount } = data.lessonSummary
+  const { sourceImages } = data
 
   return (
     <div className={styles.page}>
@@ -220,6 +231,10 @@ export function LessonDetailScreen() {
           <span>Target</span>
           <strong>{targetLanguageLabels[deck.targetLanguage]}</strong>
         </article>
+        <article>
+          <span>Page photos</span>
+          <strong>{sourceImages.length}</strong>
+        </article>
       </section>
 
       <section className={styles.cardArea}>
@@ -234,6 +249,44 @@ export function LessonDetailScreen() {
         <Link to={`/decks/${deck.id}/cards?lessonId=${lesson.id}`}>
           Browse lesson cards
         </Link>
+      </section>
+
+      <section className={styles.imageArea}>
+        <div className={styles.imageHeading}>
+          <div>
+            <p className={styles.eyebrow}>Textbook pages</p>
+            <h2>Source images</h2>
+          </div>
+          <SourceImageUploader
+            deckId={deck.id}
+            lessonId={lesson.id}
+            onUploaded={(images) =>
+              setData((currentData) =>
+                currentData
+                  ? {
+                      ...currentData,
+                      sourceImages: [...images, ...currentData.sourceImages],
+                    }
+                  : currentData,
+              )
+            }
+          />
+        </div>
+        <SourceImageGallery
+          images={sourceImages}
+          onArchived={(id) =>
+            setData((currentData) =>
+              currentData
+                ? {
+                    ...currentData,
+                    sourceImages: currentData.sourceImages.filter(
+                      (image) => image.id !== id,
+                    ),
+                  }
+                : currentData,
+            )
+          }
+        />
       </section>
 
       <button

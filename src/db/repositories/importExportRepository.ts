@@ -28,6 +28,8 @@ const tables = [
   db.knownWords,
 ] as const
 
+const destructiveImportTables = [...tables, db.sourceImages] as const
+
 export async function exportDatabase(): Promise<ExportBundleV1> {
   const [
     decks,
@@ -79,8 +81,8 @@ export async function replaceDatabase(
   }
   const expected = summarizeBundle(validation.bundle)
 
-  await db.transaction('rw', [...tables], async () => {
-    await Promise.all(tables.map((table) => table.clear()))
+  await db.transaction('rw', [...destructiveImportTables], async () => {
+    await Promise.all(destructiveImportTables.map((table) => table.clear()))
     await addBundle(validation.bundle)
   })
 
