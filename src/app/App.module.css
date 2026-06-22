@@ -1,0 +1,21 @@
+.statusPage {
+  width: min(100% - var(--space-8), 38rem);
+  min-height: 100svh;
+  margin: 0 auto;
+  display: grid;
+  align-content: center;
+  gap: var(--space-4);
+}
+
+.statusPage h1,
+.statusPage p {
+  margin: 0;
+}
+
+.eyebrow {
+  color: var(--color-accent-strong);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}

@@ -1,0 +1,10 @@
+export const databaseSchemaV1 = {
+  decks: 'id, name, myLanguage, targetLanguage, createdAt, updatedAt, archivedAt',
+  lessons: 'id, deckId, [deckId+order], title, archivedAt',
+  cards:
+    'id, deckId, lessonId, [deckId+lessonId], backDutch, suspendedAt, archivedAt',
+  reviewStates: 'id, &cardId, dueAt',
+  reviewLogs: 'id, cardId, reviewedAt, [cardId+reviewedAt]',
+  settings: 'id',
+  knownWords: 'id, normalizedText, article',
+} as const

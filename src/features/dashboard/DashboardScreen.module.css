@@ -1,0 +1,126 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(17rem, 0.65fr);
+  gap: var(--space-8);
+  align-items: stretch;
+}
+
+.hero,
+.foundationCard {
+  border-radius: var(--radius-xl);
+}
+
+.hero {
+  padding: clamp(var(--space-7), 7vw, var(--space-12));
+  color: var(--color-on-dark);
+  background:
+    radial-gradient(circle at 85% 15%, rgb(255 255 255 / 18%), transparent 30%),
+    var(--color-ink);
+  box-shadow: var(--shadow-lg);
+}
+
+.hero h1 {
+  max-width: 12ch;
+  margin: var(--space-3) 0 var(--space-5);
+  color: inherit;
+  font-size: clamp(2.7rem, 8vw, 5.75rem);
+  line-height: 0.94;
+  letter-spacing: -0.065em;
+}
+
+.hero > p:not(.eyebrow) {
+  max-width: 38rem;
+  margin: 0;
+  color: var(--color-on-dark-muted);
+  font-size: clamp(1rem, 2vw, 1.18rem);
+}
+
+.eyebrow,
+.cardLabel {
+  margin: 0;
+  color: var(--color-accent-light);
+  font-size: var(--font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+}
+
+.primaryAction,
+.secondaryAction {
+  min-height: 3rem;
+  padding: 0 var(--space-5);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.primaryAction {
+  color: var(--color-ink);
+  background: var(--color-accent-light);
+}
+
+.secondaryAction {
+  color: var(--color-on-dark);
+  border: 1px solid rgb(255 255 255 / 28%);
+}
+
+.foundationCard {
+  padding: var(--space-7);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+.foundationCard .cardLabel {
+  color: var(--color-accent-strong);
+}
+
+.foundationCard > strong {
+  display: block;
+  margin: var(--space-6) 0 var(--space-3);
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  line-height: 1.1;
+}
+
+.foundationCard > p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.foundationCard dl {
+  margin: var(--space-7) 0 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.foundationCard dl div {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.foundationCard dt {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.foundationCard dd {
+  margin: var(--space-1) 0 0;
+  font-weight: 800;
+}
+
+@media (max-width: 48rem) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
