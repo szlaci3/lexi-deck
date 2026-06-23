@@ -1,0 +1,125 @@
+.panel {
+  max-width: 52rem;
+  padding: var(--space-7);
+  display: grid;
+  gap: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.heading p {
+  margin: 0;
+  color: var(--color-accent-strong);
+  font-size: var(--font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.heading h2 {
+  margin: var(--space-1) 0 0;
+  font-size: 2rem;
+}
+
+.heading > strong {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  display: grid;
+  place-content: center;
+  color: var(--color-ink);
+  background: var(--color-accent-light);
+  border-radius: 50%;
+}
+
+.intro,
+.empty {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.empty {
+  padding: var(--space-5);
+  text-align: center;
+  background: var(--color-canvas);
+  border-radius: var(--radius-md);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.list li {
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  background: var(--color-canvas);
+  border-radius: var(--radius-md);
+}
+
+.list li div {
+  min-width: 0;
+  display: grid;
+}
+
+.list strong {
+  overflow-wrap: anywhere;
+}
+
+.list span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.list button {
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  color: var(--color-danger);
+  font: inherit;
+  font-weight: 850;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.list button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.error {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 36rem) {
+  .panel {
+    padding: var(--space-5);
+  }
+
+  .list li {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .list button {
+    width: 100%;
+  }
+}

@@ -146,12 +146,14 @@
 }
 
 .primaryButton,
-.secondaryButton {
+.secondaryButton,
+.candidateButton {
   min-height: 3rem;
   justify-self: start;
   padding: 0 var(--space-5);
   font: inherit;
   font-weight: 850;
+  text-decoration: none;
   border-radius: var(--radius-pill);
   cursor: pointer;
 }
@@ -166,6 +168,17 @@
   color: var(--color-text);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
+}
+
+.candidateButton {
+  min-height: 3rem;
+  justify-self: start;
+  padding: 0 var(--space-5);
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-ink);
+  background: var(--color-accent-light);
+  border: 1px solid var(--color-accent-light);
 }
 
 .primaryButton:disabled,

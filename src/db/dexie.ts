@@ -5,12 +5,14 @@ import type { Lesson } from '../domain/lessons/lessonTypes'
 import type { AppSettings } from '../domain/settings/settingsTypes'
 import type { ReviewLog, ReviewState } from '../domain/srs/srsTypes'
 import type { KnownWord } from '../domain/vocabulary/knownWords'
+import type { VocabularyCandidate } from '../domain/vocabulary/candidateTypes'
 import type { SourceImage } from '../domain/media/mediaTypes'
 import type { OcrText } from '../domain/ocr/ocrTypes'
 import {
   databaseSchemaV1,
   databaseSchemaV2,
   databaseSchemaV3,
+  databaseSchemaV4,
 } from './schema'
 
 export class LexiDeckDatabase extends Dexie {
@@ -23,12 +25,14 @@ export class LexiDeckDatabase extends Dexie {
   knownWords!: EntityTable<KnownWord, 'id'>
   sourceImages!: EntityTable<SourceImage, 'id'>
   ocrTexts!: EntityTable<OcrText, 'id'>
+  vocabularyCandidates!: EntityTable<VocabularyCandidate, 'id'>
 
   constructor() {
     super('lexideck')
     this.version(1).stores(databaseSchemaV1)
     this.version(2).stores(databaseSchemaV2)
     this.version(3).stores(databaseSchemaV3)
+    this.version(4).stores(databaseSchemaV4)
   }
 }
 

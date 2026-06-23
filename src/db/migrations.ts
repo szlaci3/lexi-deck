@@ -1,1 +1,1 @@
-export const currentDataVersion = 3
+export const currentDataVersion = 4

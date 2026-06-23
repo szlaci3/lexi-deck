@@ -32,6 +32,7 @@ const destructiveImportTables = [
   ...tables,
   db.sourceImages,
   db.ocrTexts,
+  db.vocabularyCandidates,
 ] as const
 
 export async function exportDatabase(): Promise<ExportBundleV1> {

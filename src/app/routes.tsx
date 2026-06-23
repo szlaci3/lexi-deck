@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { CardBrowserScreen } from '../features/cardBrowser/CardBrowserScreen'
+import { CandidateReviewScreen } from '../features/candidateReview/CandidateReviewScreen'
 import { DashboardScreen } from '../features/dashboard/DashboardScreen'
 import { DataManagementScreen } from '../features/dataManagement/DataManagementScreen'
 import { DeckDetailScreen } from '../features/deckDetail/DeckDetailScreen'
@@ -22,6 +23,10 @@ export const router = createBrowserRouter([
       {
         path: '/decks/:deckId/lessons/:lessonId/images/:sourceImageId/ocr',
         element: <OcrReviewScreen />,
+      },
+      {
+        path: '/decks/:deckId/lessons/:lessonId/images/:sourceImageId/candidates',
+        element: <CandidateReviewScreen />,
       },
       { path: '/decks/:deckId/cards', element: <CardBrowserScreen /> },
       { path: '/study', element: <StudySessionScreen /> },

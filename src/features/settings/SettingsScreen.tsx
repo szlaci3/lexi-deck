@@ -10,6 +10,7 @@ import {
   type AudioAvailability,
 } from '../../domain/audio/audioService'
 import type { AppSettings } from '../../domain/settings/settingsTypes'
+import { KnownWordsPanel } from './KnownWordsPanel'
 import styles from './SettingsScreen.module.css'
 
 export function SettingsScreen() {
@@ -250,6 +251,8 @@ export function SettingsScreen() {
           </button>
         </div>
       </form>
+
+      <KnownWordsPanel />
     </div>
   )
 }

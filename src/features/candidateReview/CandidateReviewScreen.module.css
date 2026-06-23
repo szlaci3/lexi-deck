@@ -1,0 +1,348 @@
+.page {
+  display: grid;
+  gap: var(--space-7);
+}
+
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.breadcrumbs a,
+.sectionHeading a,
+.errorState a {
+  color: var(--color-accent-strong);
+  font-weight: 800;
+}
+
+.hero {
+  padding: clamp(var(--space-7), 7vw, var(--space-10));
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-7);
+  color: var(--color-on-dark);
+  background:
+    radial-gradient(circle at 84% 18%, rgb(255 255 255 / 17%), transparent 28%),
+    var(--color-ink);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.hero h1 {
+  margin: var(--space-3) 0;
+  color: inherit;
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  line-height: 0.98;
+  letter-spacing: -0.06em;
+}
+
+.hero p:last-child {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--color-on-dark-muted);
+}
+
+.hero > strong {
+  min-width: 8rem;
+  padding: var(--space-4);
+  color: var(--color-ink);
+  text-align: center;
+  background: var(--color-accent-light);
+  border-radius: var(--radius-pill);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-accent-strong);
+  font-size: var(--font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.hero .eyebrow {
+  color: var(--color-accent-light);
+}
+
+.extractionPanel,
+.manualPanel,
+.candidateArea {
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+.extractionPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+.extractionPanel h2,
+.sectionHeading h2 {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+.extractionPanel p:last-child {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.manualPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: end;
+}
+
+.manualPanel label,
+.editorGrid label {
+  display: grid;
+  gap: var(--space-2);
+  font-weight: 800;
+}
+
+.manualPanel textarea,
+.editorGrid input,
+.editorGrid select {
+  width: 100%;
+  min-height: 3rem;
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.manualPanel textarea {
+  resize: vertical;
+}
+
+.manualPanel button,
+.primaryButton,
+.candidateActions button {
+  min-height: 3rem;
+  padding: 0 var(--space-5);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 850;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.primaryButton,
+.candidateActions .convertButton {
+  color: var(--color-on-accent);
+  background: var(--color-accent-strong);
+  border-color: var(--color-accent-strong);
+}
+
+.candidateActions .approveButton {
+  color: var(--color-ink);
+  background: var(--color-accent-light);
+  border-color: var(--color-accent-light);
+}
+
+.candidateActions .rejectButton {
+  color: var(--color-danger);
+}
+
+.primaryButton:disabled,
+.manualPanel button:disabled,
+.candidateActions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.candidateArea {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.sectionHeading {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.candidateList {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.candidateCard {
+  padding: var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.candidateHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.candidateHeading > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.candidateHeading > strong {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  text-transform: capitalize;
+}
+
+.statusPill,
+.uniquePill,
+.warningPill {
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.78rem;
+  font-weight: 850;
+  border-radius: var(--radius-pill);
+}
+
+.statusPill {
+  background: var(--color-surface-muted);
+}
+
+.uniquePill {
+  color: var(--color-ink);
+  background: var(--color-accent-soft);
+}
+
+.warningPill {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.editorGrid {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.28fr) minmax(0, 0.72fr);
+  gap: var(--space-4);
+}
+
+.meaningField {
+  grid-column: 1 / -1;
+}
+
+.preview {
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-1);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.preview span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.preview strong {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+}
+
+.candidateActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.completedMessage,
+.inlineError,
+.success,
+.error {
+  margin: 0;
+}
+
+.completedMessage {
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.inlineError,
+.error {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.inlineError,
+.success,
+.error {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+.success {
+  color: var(--color-ink);
+  background: var(--color-accent-soft);
+}
+
+.emptyState,
+.errorState {
+  padding: var(--space-8);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+.emptyState {
+  text-align: center;
+}
+
+.emptyState p,
+.errorState p {
+  color: var(--color-text-muted);
+}
+
+.status {
+  margin-top: var(--space-10);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+@media (max-width: 48rem) {
+  .hero,
+  .extractionPanel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .manualPanel {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 34rem) {
+  .editorGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .meaningField {
+    grid-column: auto;
+  }
+
+  .candidateActions {
+    display: grid;
+  }
+
+  .primaryButton,
+  .manualPanel button {
+    width: 100%;
+  }
+}

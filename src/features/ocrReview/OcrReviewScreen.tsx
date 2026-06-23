@@ -273,6 +273,12 @@ export function OcrReviewScreen() {
               >
                 {isSaving ? 'Saving…' : 'Save corrected text'}
               </button>
+              <Link
+                className={styles.candidateButton}
+                to={`/decks/${deck.id}/lessons/${lesson.id}/images/${sourceImage.id}/candidates`}
+              >
+                Review vocabulary candidates
+              </Link>
             </>
           ) : (
             <p className={styles.intro}>
