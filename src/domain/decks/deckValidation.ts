@@ -37,7 +37,7 @@ export function validateDeckInput(
   }
 
   if (!isMyLanguage(value.myLanguage)) {
-    errors.myLanguage = 'Choose English or Simplified Chinese.'
+    errors.myLanguage = 'Choose English or Chinese.'
   }
 
   if (Object.keys(errors).length > 0) {

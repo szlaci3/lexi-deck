@@ -230,6 +230,14 @@ export function CardBrowserScreen() {
     setIsFormOpen(false)
   }
 
+  function cancelCardForm() {
+    if (editingCard) {
+      closeForm()
+      return
+    }
+    navigate(`/decks/${deckId}`)
+  }
+
   function closeImageForm() {
     setIsImageFormOpen(false)
   }
@@ -241,17 +249,17 @@ export function CardBrowserScreen() {
 
     if (editingCard) {
       await updateCard(editingCard.id, input)
+      closeForm()
+      navigate(
+        lessonFilter
+          ? `/decks/${deckId}/cards?lessonId=${lessonFilter}`
+          : `/decks/${deckId}/cards`,
+        { replace: true },
+      )
     } else {
       await createCardWithInitialReviewState({ deckId, ...input })
     }
 
-    closeForm()
-    navigate(
-      lessonFilter
-        ? `/decks/${deckId}/cards?lessonId=${lessonFilter}`
-        : `/decks/${deckId}/cards`,
-      { replace: true },
-    )
     await loadData()
   }
 
@@ -385,7 +393,7 @@ export function CardBrowserScreen() {
           lessons={data.lessons}
           card={editingCard}
           initialLessonId={editingCard?.lessonId ?? initialLessonId}
-          onCancel={closeForm}
+          onCancel={cancelCardForm}
           onCheckDuplicates={checkDuplicates}
           onSubmit={saveCard}
         />

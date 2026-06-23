@@ -1,6 +1,6 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
 }
 
@@ -28,29 +28,24 @@
   font-size: var(--font-size-sm);
 }
 
-.grid .again {
-  border-color: #c95151;
-}
-
 .grid .hard {
-  border-color: #d98c45;
-}
-
-.grid .good {
-  border-color: #4e8a68;
+  color: #fff;
+  background: var(--color-danger);
+  border-color: var(--color-danger);
 }
 
 .grid .easy {
-  border-color: #4d75ad;
+  color: #fff;
+  background: #287a45;
+  border-color: #287a45;
+}
+
+.grid .hard span,
+.grid .easy span {
+  color: inherit;
 }
 
 .grid button:disabled {
   cursor: wait;
   opacity: 0.55;
-}
-
-@media (max-width: 38rem) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }

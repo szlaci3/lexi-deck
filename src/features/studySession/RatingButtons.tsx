@@ -1,17 +1,17 @@
 import {
   srsRatingLabels,
   type ScheduledReviewResult,
-  type SrsRating,
+  type StudyRating,
 } from '../../domain/srs/srsTypes'
 import styles from './RatingButtons.module.css'
 
 type RatingButtonsProps = {
-  previews: Record<SrsRating, ScheduledReviewResult>
+  previews: Record<StudyRating, ScheduledReviewResult>
   disabled: boolean
-  onRate: (rating: SrsRating) => void
+  onRate: (rating: StudyRating) => void
 }
 
-const ratings: SrsRating[] = ['again', 'hard', 'good', 'easy']
+const ratings: StudyRating[] = ['hard', 'easy']
 
 export function RatingButtons({
   previews,

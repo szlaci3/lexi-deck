@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { validateCardInput } from './cardValidation'
 
 describe('validateCardInput', () => {
-  it('trims values and preserves Simplified Chinese prompts', () => {
+  it('trims values and preserves Chinese prompts', () => {
     expect(
       validateCardInput({
         lessonId: ' lesson-1 ',

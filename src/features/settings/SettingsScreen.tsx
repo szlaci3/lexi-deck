@@ -134,6 +134,53 @@ export function SettingsScreen() {
 
       <form className={styles.panel} onSubmit={handleSubmit}>
         <div className={styles.panelHeading}>
+          <p>Daily workload</p>
+          <h2>Study limits</h2>
+          <span>
+            Limits are global across all decks. Reviews are selected before new
+            cards, and overdue reviews count toward the review limit.
+          </span>
+        </div>
+
+        <div className={styles.limitFields}>
+          <label className={styles.field}>
+            <span>Daily new card limit</span>
+            <input
+              type="number"
+              min="0"
+              max="500"
+              step="1"
+              value={settings.dailyNewCardLimit}
+              onChange={(event) =>
+                setSettings({
+                  ...settings,
+                  dailyNewCardLimit: Number(event.target.value),
+                })
+              }
+            />
+            <small>Default: 20. Use 0 to pause new cards.</small>
+          </label>
+
+          <label className={styles.field}>
+            <span>Daily review limit</span>
+            <input
+              type="number"
+              min="0"
+              max="5000"
+              step="1"
+              value={settings.dailyReviewLimit}
+              onChange={(event) =>
+                setSettings({
+                  ...settings,
+                  dailyReviewLimit: Number(event.target.value),
+                })
+              }
+            />
+            <small>Default: 200. Overdue cards respect this limit.</small>
+          </label>
+        </div>
+
+        <div className={styles.sectionDivider}>
           <div>
             <p>Dutch audio</p>
             <h2>Pronunciation</h2>
@@ -212,52 +259,6 @@ export function SettingsScreen() {
           </div>
         </label>
 
-        <div className={styles.sectionDivider}>
-          <p>Daily workload</p>
-          <h2>Study limits</h2>
-          <span>
-            Limits are global across all decks. Reviews are selected before new
-            cards, and overdue reviews count toward the review limit.
-          </span>
-        </div>
-
-        <div className={styles.limitFields}>
-          <label className={styles.field}>
-            <span>Daily new card limit</span>
-            <input
-              type="number"
-              min="0"
-              max="500"
-              step="1"
-              value={settings.dailyNewCardLimit}
-              onChange={(event) =>
-                setSettings({
-                  ...settings,
-                  dailyNewCardLimit: Number(event.target.value),
-                })
-              }
-            />
-            <small>Default: 20. Use 0 to pause new cards.</small>
-          </label>
-
-          <label className={styles.field}>
-            <span>Daily review limit</span>
-            <input
-              type="number"
-              min="0"
-              max="5000"
-              step="1"
-              value={settings.dailyReviewLimit}
-              onChange={(event) =>
-                setSettings({
-                  ...settings,
-                  dailyReviewLimit: Number(event.target.value),
-                })
-              }
-            />
-            <small>Default: 200. Overdue cards respect this limit.</small>
-          </label>
-        </div>
 
         {availability.supported && availability.voices.length === 0 ? (
           <p className={styles.warning} role="status">

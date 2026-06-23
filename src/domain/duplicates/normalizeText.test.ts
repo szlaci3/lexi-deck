@@ -6,7 +6,7 @@ describe('normalizeText', () => {
     expect(normalizeText('  Hallo,   WERELD!  ')).toBe('hallo wereld')
   })
 
-  it('preserves Simplified Chinese prompt text', () => {
+  it('preserves Chinese prompt text', () => {
     expect(normalizeText('  黄瓜  ')).toBe('黄瓜')
   })
 })

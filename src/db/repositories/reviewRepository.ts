@@ -1,4 +1,4 @@
-import type { ReviewLog, SrsRating } from '../../domain/srs/srsTypes'
+import type { ReviewLog, StudyRating } from '../../domain/srs/srsTypes'
 import type { StudyItem } from '../../domain/srs/dueCards'
 import type { SourceImage } from '../../domain/media/mediaTypes'
 import { isStudyItemDue } from '../../domain/srs/dueCards'
@@ -27,7 +27,7 @@ type DueStudyOptions = {
 
 type SubmitReviewInput = {
   cardId: string
-  rating: SrsRating
+  rating: StudyRating
   reviewedAt: string
   responseTimeMs: number
 }

@@ -1,9 +1,8 @@
 export type SrsRating = 'again' | 'hard' | 'good' | 'easy'
+export type StudyRating = Extract<SrsRating, 'hard' | 'easy'>
 
-export const srsRatingLabels: Record<SrsRating, string> = {
-  again: 'Again',
+export const srsRatingLabels: Record<StudyRating, string> = {
   hard: 'Hard',
-  good: 'Good',
   easy: 'Easy',
 }
 
@@ -35,7 +34,7 @@ export type ReviewLog = {
 
 export type ScheduleReviewInput = {
   reviewState: ReviewState
-  rating: SrsRating
+  rating: StudyRating
   reviewedAt: string
 }
 

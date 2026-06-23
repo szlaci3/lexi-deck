@@ -3,7 +3,7 @@ export type TargetLanguage = 'nl'
 
 export const myLanguageLabels: Record<MyLanguage, string> = {
   en: 'English',
-  'zh-Hans': 'Simplified Chinese',
+  'zh-Hans': 'Chinese',
 }
 
 export const targetLanguageLabels: Record<TargetLanguage, string> = {

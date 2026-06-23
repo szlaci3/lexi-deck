@@ -14,19 +14,17 @@ import type { DeckSummary } from '../../domain/decks/deckTypes'
 import { getCardPresentation } from '../../domain/cards/cardPresentation'
 import type { StudyItem } from '../../domain/srs/dueCards'
 import { previewReviewIntervals } from '../../domain/srs/scheduleReview'
-import type { SrsRating } from '../../domain/srs/srsTypes'
+import type { StudyRating } from '../../domain/srs/srsTypes'
 import type { AppSettings } from '../../domain/settings/settingsTypes'
 import type { LimitedStudySelection } from '../../domain/srs/studyLimits'
 import { RatingButtons } from './RatingButtons'
 import { StudyCard } from './StudyCard'
 import styles from './StudySessionScreen.module.css'
 
-type SessionCounts = Record<SrsRating, number>
+type SessionCounts = Record<StudyRating, number>
 
 const emptyCounts: SessionCounts = {
-  again: 0,
   hard: 0,
-  good: 0,
   easy: 0,
 }
 
@@ -155,7 +153,7 @@ export function StudySessionScreen() {
     }
   }
 
-  async function rateCard(rating: SrsRating) {
+  async function rateCard(rating: StudyRating) {
     if (!currentItem) {
       return
     }
@@ -218,7 +216,7 @@ export function StudySessionScreen() {
           </p>
         ) : null}
         <div className={styles.summaryGrid}>
-          {(['again', 'hard', 'good', 'easy'] as SrsRating[]).map((rating) => (
+          {(['hard', 'easy'] as StudyRating[]).map((rating) => (
             <article key={rating}>
               <span>{rating}</span>
               <strong>{counts[rating]}</strong>

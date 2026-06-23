@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import type { Deck } from '../../domain/decks/deckTypes'
 import { myLanguageLabels } from '../../domain/decks/deckTypes'
 import type { Lesson } from '../../domain/lessons/lessonTypes'
@@ -51,12 +51,15 @@ export function CardForm({
   const [errors, setErrors] = useState<CardValidationErrors>({})
   const [duplicates, setDuplicates] = useState<DuplicateDetectionResult>()
   const [submitError, setSubmitError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDuplicateApproved, setIsDuplicateApproved] = useState(false)
+  const promptInputRef = useRef<HTMLInputElement>(null)
 
   function clearDuplicateApproval() {
     setDuplicates(undefined)
     setIsDuplicateApproved(false)
+    setSuccessMessage('')
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -76,6 +79,7 @@ export function CardForm({
 
     setErrors({})
     setSubmitError('')
+    setSuccessMessage('')
     setIsSubmitting(true)
 
     try {
@@ -93,6 +97,17 @@ export function CardForm({
       }
 
       await onSubmit(result.value)
+      if (!card) {
+        setFrontText('')
+        setBackDutch('')
+        setArticle('unknown')
+        setNotes('')
+        setErrors({})
+        setDuplicates(undefined)
+        setIsDuplicateApproved(false)
+        setSuccessMessage('Card saved. Add another card when ready.')
+        requestAnimationFrame(() => promptInputRef.current?.focus())
+      }
     } catch (error: unknown) {
       setSubmitError(
         error instanceof Error ? error.message : 'The card could not be saved.',
@@ -141,6 +156,7 @@ export function CardForm({
       <label className={styles.field}>
         <span>{promptLabel}</span>
         <input
+          ref={promptInputRef}
           autoFocus
           value={frontText}
           onChange={(event) => {
@@ -243,6 +259,11 @@ export function CardForm({
       {submitError ? (
         <p className={styles.submitError} role="alert">
           {submitError}
+        </p>
+      ) : null}
+      {successMessage ? (
+        <p className={styles.successMessage} role="status">
+          {successMessage}
         </p>
       ) : null}
 

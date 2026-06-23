@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { validateDeckInput } from './deckValidation'
 
 describe('validateDeckInput', () => {
-  it('trims valid deck values and preserves Simplified Chinese', () => {
+  it('trims valid deck values and preserves Chinese', () => {
     expect(
       validateDeckInput({
         name: '  Nederlands A1  ',

@@ -123,7 +123,7 @@ export function DashboardScreen() {
           <h1>Build vocabulary that stays with you.</h1>
           <p>
             Organize each textbook or course into a local deck, with prompts in
-            English or Simplified Chinese.
+            English or Chinese.
           </p>
         </div>
         <div className={styles.heroActions}>

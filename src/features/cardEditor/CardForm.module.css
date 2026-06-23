@@ -67,6 +67,15 @@
   color: var(--color-danger);
 }
 
+.successMessage {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--color-ink);
+  font-weight: 750;
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-md);
+}
+
 .error {
   font-size: var(--font-size-sm);
   font-weight: 500;
