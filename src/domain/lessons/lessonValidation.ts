@@ -24,10 +24,6 @@ export function validateLessonInput(
     errors.title = 'Enter a lesson title.'
   }
 
-  if (!value.description) {
-    errors.description = 'Enter a short description.'
-  }
-
   if (Object.keys(errors).length > 0) {
     return { valid: false, errors }
   }

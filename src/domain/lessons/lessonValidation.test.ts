@@ -17,7 +17,7 @@ describe('validateLessonInput', () => {
     })
   })
 
-  it('requires a title and description', () => {
+  it('requires a title', () => {
     const result = validateLessonInput({
       title: '',
       description: ' ',
@@ -26,7 +26,6 @@ describe('validateLessonInput', () => {
     expect(result.valid).toBe(false)
     if (!result.valid) {
       expect(result.errors.title).toBeDefined()
-      expect(result.errors.description).toBeDefined()
     }
   })
 })

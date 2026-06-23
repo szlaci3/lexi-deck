@@ -231,7 +231,7 @@ export function DeckDetailScreen() {
         </div>
         <div className={styles.heroActions}>
           <Link className={styles.studyButton} to={`/study/deck/${deck.id}`}>
-            Study {dueCount} due
+            Study due: {dueCount}
           </Link>
           <button type="button" onClick={() => setIsEditingDeck(true)}>
             Edit deck
@@ -351,7 +351,7 @@ export function DeckDetailScreen() {
             Browse cards <span aria-hidden="true">→</span>
           </Link>
           <Link to={`/study/deck/${deck.id}`}>
-            Study due cards <span aria-hidden="true">→</span>
+            Study due: {dueCount} <span aria-hidden="true">→</span>
           </Link>
           <button
             className={styles.archiveButton}

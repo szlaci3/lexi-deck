@@ -1,7 +1,10 @@
 import type { ReviewLog, StudyRating } from '../../domain/srs/srsTypes'
 import type { StudyItem } from '../../domain/srs/dueCards'
 import type { SourceImage } from '../../domain/media/mediaTypes'
-import { isStudyItemDue } from '../../domain/srs/dueCards'
+import {
+  isStudyItemDue,
+  isStudyItemEligible,
+} from '../../domain/srs/dueCards'
 import { scheduleReview } from '../../domain/srs/scheduleReview'
 import {
   applyDailyStudyLimits,
@@ -23,6 +26,7 @@ export class ReviewStateNotFoundError extends Error {
 type DueStudyOptions = {
   now: string
   deckId?: string
+  lessonId?: string
 }
 
 type SubmitReviewInput = {
@@ -35,32 +39,39 @@ type SubmitReviewInput = {
 export async function listDueStudyItems({
   now,
   deckId,
+  lessonId,
 }: DueStudyOptions): Promise<StudyItem[]> {
-  const dueStates = await db.reviewStates
-    .where('dueAt')
-    .belowOrEqual(now)
-    .toArray()
+  return (await listEligibleStudyItems({ deckId, lessonId }))
+    .filter((item) => isStudyItemDue(item, now))
+    .sort((left, right) =>
+      left.reviewState.dueAt.localeCompare(right.reviewState.dueAt),
+    )
+}
 
-  if (dueStates.length === 0) {
-    return []
-  }
+type StudyScope = {
+  deckId?: string
+  lessonId?: string
+}
 
-  const cards = (
-    await db.cards.bulkGet(dueStates.map((state) => state.cardId))
-  ).filter((card) => card !== undefined)
-  const filteredCards = deckId
-    ? cards.filter((card) => card.deckId === deckId)
-    : cards
+export async function listEligibleStudyItems({
+  deckId,
+  lessonId,
+}: StudyScope = {}): Promise<StudyItem[]> {
+  const cards = lessonId
+    ? await db.cards.where('lessonId').equals(lessonId).toArray()
+    : deckId
+      ? await db.cards.where('deckId').equals(deckId).toArray()
+      : await db.cards.toArray()
 
-  if (filteredCards.length === 0) {
-    return []
-  }
+  if (cards.length === 0) return []
 
-  const [decks, lessons] = await Promise.all([
-    db.decks.bulkGet([...new Set(filteredCards.map((card) => card.deckId))]),
-    db.lessons.bulkGet([
-      ...new Set(filteredCards.map((card) => card.lessonId)),
-    ]),
+  const [reviewStates, decks, lessons] = await Promise.all([
+    db.reviewStates
+      .where('cardId')
+      .anyOf(cards.map((card) => card.id))
+      .toArray(),
+    db.decks.bulkGet([...new Set(cards.map((card) => card.deckId))]),
+    db.lessons.bulkGet([...new Set(cards.map((card) => card.lessonId))]),
   ])
   const deckById = new Map(
     decks.filter((deck) => deck !== undefined).map((deck) => [deck.id, deck]),
@@ -71,9 +82,9 @@ export async function listDueStudyItems({
       .map((lesson) => [lesson.id, lesson]),
   )
   const stateByCardId = new Map(
-    dueStates.map((reviewState) => [reviewState.cardId, reviewState]),
+    reviewStates.map((reviewState) => [reviewState.cardId, reviewState]),
   )
-  const imageIds = filteredCards.flatMap((card) =>
+  const imageIds = cards.flatMap((card) =>
     card.frontImageId ? [card.frontImageId] : [],
   )
   const images = await db.sourceImages.bulkGet([...new Set(imageIds)])
@@ -86,7 +97,7 @@ export async function listDueStudyItems({
       .map((image) => [image.id, image]),
   )
 
-  return filteredCards
+  return cards
     .flatMap((card): StudyItem[] => {
       const deck = deckById.get(card.deckId)
       const lesson = lessonById.get(card.lessonId)
@@ -106,7 +117,7 @@ export async function listDueStudyItems({
           ]
         : []
     })
-    .filter((item) => isStudyItemDue(item, now))
+    .filter(isStudyItemEligible)
     .sort((left, right) =>
       left.reviewState.dueAt.localeCompare(right.reviewState.dueAt),
     )
@@ -115,19 +126,27 @@ export async function listDueStudyItems({
 export async function countDueCards(
   now: string,
   deckId?: string,
+  lessonId?: string,
 ): Promise<number> {
-  return (await listDueStudyItems({ now, deckId })).length
+  return (await listDueStudyItems({ now, deckId, lessonId })).length
+}
+
+export async function countEligibleStudyCards(
+  scope: StudyScope = {},
+): Promise<number> {
+  return (await listEligibleStudyItems(scope)).length
 }
 
 export async function listLimitedStudyItems({
   now,
   deckId,
+  lessonId,
   limits,
 }: DueStudyOptions & {
   limits: DailyStudyLimits
 }): Promise<LimitedStudySelection> {
   const [items, usage] = await Promise.all([
-    listDueStudyItems({ now, deckId }),
+    listDueStudyItems({ now, deckId, lessonId }),
     getDailyStudyUsage(new Date(now)),
   ])
   return applyDailyStudyLimits(items, usage, limits)

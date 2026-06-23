@@ -8,7 +8,10 @@ import { validateLessonInput } from '../../domain/lessons/lessonValidation'
 import { nowIso } from '../../utils/dates'
 import { createId } from '../../utils/ids'
 import { db } from '../dexie'
-import { listDueStudyItems } from './reviewRepository'
+import {
+  countDueCards,
+  countEligibleStudyCards,
+} from './reviewRepository'
 
 export class LessonNotFoundError extends Error {
   constructor() {
@@ -144,18 +147,17 @@ export async function listActiveLessonSummariesByDeckId(
 }
 
 async function buildLessonSummary(lesson: Lesson): Promise<LessonSummary> {
-  const cards = await db.cards
-    .where('lessonId')
-    .equals(lesson.id)
-    .filter((card) => !card.archivedAt)
-    .toArray()
-  const dueCount = (
-    await listDueStudyItems({ now: nowIso(), deckId: lesson.deckId })
-  ).filter((item) => item.lesson.id === lesson.id).length
+  const [cardCount, dueCount] = await Promise.all([
+    countEligibleStudyCards({
+      deckId: lesson.deckId,
+      lessonId: lesson.id,
+    }),
+    countDueCards(nowIso(), lesson.deckId, lesson.id),
+  ])
 
   return {
     lesson,
-    cardCount: cards.length,
+    cardCount,
     dueCount,
   }
 }

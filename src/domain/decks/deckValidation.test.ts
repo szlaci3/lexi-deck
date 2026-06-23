@@ -19,7 +19,7 @@ describe('validateDeckInput', () => {
     })
   })
 
-  it('requires a name and description', () => {
+  it('requires a name', () => {
     const result = validateDeckInput({
       name: ' ',
       description: '',
@@ -29,7 +29,6 @@ describe('validateDeckInput', () => {
     expect(result.valid).toBe(false)
     if (!result.valid) {
       expect(result.errors.name).toBeDefined()
-      expect(result.errors.description).toBeDefined()
     }
   })
 })

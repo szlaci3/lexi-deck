@@ -194,6 +194,18 @@ export function LessonDetailScreen() {
         </div>
         <div className={styles.heroActions}>
           <Link
+            className={styles.studyAllButton}
+            to={`/study/lesson/${lesson.id}`}
+          >
+            Study all: {cardCount}
+          </Link>
+          <Link
+            className={styles.studyDueButton}
+            to={`/study/lesson/${lesson.id}/due`}
+          >
+            Study due: {dueCount}
+          </Link>
+          <Link
             className={styles.createCardButton}
             to={`/decks/${deck.id}/cards?lessonId=${lesson.id}&create=1`}
           >

@@ -31,6 +31,14 @@ export const router = createBrowserRouter([
       { path: '/decks/:deckId/cards', element: <CardBrowserScreen /> },
       { path: '/study', element: <StudySessionScreen /> },
       { path: '/study/deck/:deckId', element: <StudySessionScreen /> },
+      {
+        path: '/study/lesson/:lessonId',
+        element: <StudySessionScreen mode="all" />,
+      },
+      {
+        path: '/study/lesson/:lessonId/due',
+        element: <StudySessionScreen mode="due" />,
+      },
       { path: '/data', element: <DataManagementScreen /> },
       { path: '/settings', element: <SettingsScreen /> },
     ],

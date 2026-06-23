@@ -4,24 +4,36 @@ import {
   playDutchCardAudio,
   stopDutchAudio,
 } from '../../domain/audio/audioService'
+import { getCardPresentation } from '../../domain/cards/cardPresentation'
 import { getDeckSummary } from '../../db/repositories/deckRepository'
+import { getLessonById } from '../../db/repositories/lessonRepository'
 import {
+  listEligibleStudyItems,
   listLimitedStudyItems,
   submitReview,
 } from '../../db/repositories/reviewRepository'
 import { getSettings } from '../../db/repositories/settingsRepository'
 import type { DeckSummary } from '../../domain/decks/deckTypes'
-import { getCardPresentation } from '../../domain/cards/cardPresentation'
+import type { Lesson } from '../../domain/lessons/lessonTypes'
+import type { AppSettings } from '../../domain/settings/settingsTypes'
 import type { StudyItem } from '../../domain/srs/dueCards'
 import { previewReviewIntervals } from '../../domain/srs/scheduleReview'
 import type { StudyRating } from '../../domain/srs/srsTypes'
-import type { AppSettings } from '../../domain/settings/settingsTypes'
 import type { LimitedStudySelection } from '../../domain/srs/studyLimits'
 import { RatingButtons } from './RatingButtons'
 import { StudyCard } from './StudyCard'
 import styles from './StudySessionScreen.module.css'
 
 type SessionCounts = Record<StudyRating, number>
+
+type StudySessionScreenProps = {
+  mode?: 'all' | 'due'
+}
+
+type SessionSelection = Pick<
+  LimitedStudySelection,
+  'items' | 'hiddenNewCards' | 'hiddenReviews'
+>
 
 const emptyCounts: SessionCounts = {
   hard: 0,
@@ -36,10 +48,13 @@ const emptySelection: Pick<
   hiddenReviews: 0,
 }
 
-export function StudySessionScreen() {
-  const { deckId } = useParams()
+export function StudySessionScreen({
+  mode = 'due',
+}: StudySessionScreenProps) {
+  const { deckId, lessonId } = useParams()
   const [items, setItems] = useState<StudyItem[]>([])
   const [deckSummary, setDeckSummary] = useState<DeckSummary>()
+  const [lesson, setLesson] = useState<Lesson>()
   const [settings, setSettings] = useState<AppSettings>()
   const [limitedCounts, setLimitedCounts] = useState(emptySelection)
   const [isRevealed, setIsRevealed] = useState(false)
@@ -58,28 +73,52 @@ export function StudySessionScreen() {
 
     Promise.all([
       getSettings(),
-      deckId ? getDeckSummary(deckId) : Promise.resolve(undefined),
+      lessonId ? getLessonById(lessonId) : Promise.resolve(undefined),
     ])
-      .then(async ([nextSettings, nextDeckSummary]) => {
-        const selection = await listLimitedStudyItems({
-          now,
-          deckId,
-          limits: {
-            newCards: nextSettings.dailyNewCardLimit,
-            reviews: nextSettings.dailyReviewLimit,
-          },
-        })
-        return { nextSettings, nextDeckSummary, selection }
-      })
-      .then(({ nextSettings, nextDeckSummary, selection }) => {
-        if (!isActive) {
-          return
+      .then(async ([nextSettings, nextLesson]) => {
+        if (lessonId && (!nextLesson || nextLesson.archivedAt)) {
+          throw new Error('This lesson was not found or has been archived.')
         }
 
-        if (deckId && !nextDeckSummary) {
-          setError('This deck was not found or has been archived.')
-          return
+        const scopedDeckId = nextLesson?.deckId ?? deckId
+        const nextDeckSummary = scopedDeckId
+          ? await getDeckSummary(scopedDeckId)
+          : undefined
+        if (scopedDeckId && !nextDeckSummary) {
+          throw new Error('This deck was not found or has been archived.')
         }
+
+        let selection: SessionSelection
+        if (mode === 'all' && lessonId) {
+          selection = {
+            items: await listEligibleStudyItems({
+              deckId: scopedDeckId,
+              lessonId,
+            }),
+            hiddenNewCards: 0,
+            hiddenReviews: 0,
+          }
+        } else {
+          selection = await listLimitedStudyItems({
+            now,
+            deckId: scopedDeckId,
+            lessonId,
+            limits: {
+              newCards: nextSettings.dailyNewCardLimit,
+              reviews: nextSettings.dailyReviewLimit,
+            },
+          })
+        }
+
+        return {
+          nextSettings,
+          nextDeckSummary,
+          nextLesson,
+          selection,
+        }
+      })
+      .then(({ nextSettings, nextDeckSummary, nextLesson, selection }) => {
+        if (!isActive) return
 
         setItems(selection.items)
         setLimitedCounts({
@@ -88,6 +127,7 @@ export function StudySessionScreen() {
         })
         setSettings(nextSettings)
         setDeckSummary(nextDeckSummary)
+        setLesson(nextLesson)
         setCardShownAt(Date.now())
       })
       .catch((loadError: unknown) => {
@@ -100,16 +140,14 @@ export function StudySessionScreen() {
         }
       })
       .finally(() => {
-        if (isActive) {
-          setIsLoading(false)
-        }
+        if (isActive) setIsLoading(false)
       })
 
     return () => {
       isActive = false
       stopDutchAudio()
     }
-  }, [deckId])
+  }, [deckId, lessonId, mode])
 
   const currentItem = items[0]
   const previewTime = new Date().toISOString()
@@ -120,15 +158,17 @@ export function StudySessionScreen() {
         : undefined,
     [currentItem, previewTime],
   )
+  const returnPath = lesson
+    ? `/decks/${lesson.deckId}/lessons/${lesson.id}`
+    : deckId
+      ? `/decks/${deckId}`
+      : '/'
 
   async function playAudio() {
-    if (!currentItem || !settings) {
-      return
-    }
+    if (!currentItem || !settings) return
 
     setIsPlayingAudio(true)
     setAudioError('')
-
     try {
       await playDutchCardAudio(currentItem.card, settings)
     } catch (playError: unknown) {
@@ -154,13 +194,10 @@ export function StudySessionScreen() {
   }
 
   async function rateCard(rating: StudyRating) {
-    if (!currentItem) {
-      return
-    }
+    if (!currentItem) return
 
     setIsSubmitting(true)
     setError('')
-
     try {
       await submitReview({
         cardId: currentItem.card.id,
@@ -190,7 +227,11 @@ export function StudySessionScreen() {
   }
 
   if (isLoading) {
-    return <p className={styles.status}>Loading due cards…</p>
+    return (
+      <p className={styles.status}>
+        Loading {mode === 'all' ? 'lesson cards' : 'due cards'}…
+      </p>
+    )
   }
 
   if (error && !currentItem) {
@@ -198,7 +239,7 @@ export function StudySessionScreen() {
       <section className={styles.errorState} role="alert">
         <h1>Study is unavailable.</h1>
         <p>{error}</p>
-        <Link to={deckId ? `/decks/${deckId}` : '/'}>Go back</Link>
+        <Link to={returnPath}>Go back</Link>
       </section>
     )
   }
@@ -223,7 +264,7 @@ export function StudySessionScreen() {
             </article>
           ))}
         </div>
-        <Link to={deckId ? `/decks/${deckId}` : '/'}>Finish session</Link>
+        <Link to={returnPath}>Finish session</Link>
       </section>
     )
   }
@@ -236,15 +277,23 @@ export function StudySessionScreen() {
         <p className={styles.eyebrow}>
           {isLimited ? 'Daily limit reached' : 'All caught up'}
         </p>
-        <h1>{isLimited ? 'Study complete for today.' : 'No cards are due.'}</h1>
+        <h1>
+          {isLimited
+            ? 'Study complete for today.'
+            : mode === 'all'
+              ? 'No cards are available.'
+              : 'No cards are due.'}
+        </h1>
         <p>
           {isLimited
             ? `${limitedCounts.hiddenReviews} reviews and ${limitedCounts.hiddenNewCards} new cards remain due. Change the global limits in Settings if needed.`
-            : deckSummary
-              ? `${deckSummary.deck.name} has nothing scheduled right now.`
-              : 'Your active decks have nothing scheduled right now.'}
+            : mode === 'all' && lesson
+              ? `${lesson.title} has no active, unsuspended cards to study.`
+              : deckSummary
+                ? `${deckSummary.deck.name} has nothing scheduled right now.`
+                : 'Your active decks have nothing scheduled right now.'}
         </p>
-        <Link to={deckId ? `/decks/${deckId}` : '/'}>Go back</Link>
+        <Link to={returnPath}>Go back</Link>
       </section>
     )
   }
@@ -254,7 +303,11 @@ export function StudySessionScreen() {
       <header className={styles.header}>
         <div>
           <p className={styles.eyebrow}>
-            {deckSummary ? deckSummary.deck.name : 'All decks'}
+            {lesson
+              ? `${lesson.title} · ${mode === 'all' ? 'Study all' : 'Study due'}`
+              : deckSummary
+                ? deckSummary.deck.name
+                : 'All decks'}
           </p>
           <h1>Study session</h1>
         </div>

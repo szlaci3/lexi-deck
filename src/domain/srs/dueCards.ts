@@ -12,12 +12,15 @@ export type StudyItem = {
   image?: SourceImage
 }
 
-export function isStudyItemDue(item: StudyItem, now: string): boolean {
+export function isStudyItemEligible(item: StudyItem): boolean {
   return (
-    item.reviewState.dueAt <= now &&
     !item.card.suspendedAt &&
     !item.card.archivedAt &&
     !item.lesson.archivedAt &&
     !item.deck.archivedAt
   )
+}
+
+export function isStudyItemDue(item: StudyItem, now: string): boolean {
+  return isStudyItemEligible(item) && item.reviewState.dueAt <= now
 }

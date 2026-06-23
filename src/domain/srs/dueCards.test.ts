@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { StudyItem } from './dueCards'
-import { isStudyItemDue } from './dueCards'
+import { isStudyItemDue, isStudyItemEligible } from './dueCards'
 
 const now = '2026-06-22T12:00:00.000Z'
 
@@ -76,5 +76,18 @@ describe('isStudyItemDue', () => {
         now,
       ),
     ).toBe(false)
+  })
+
+  it('allows an eligible future card for Study All but not Study Due', () => {
+    const future = {
+      ...studyItem(),
+      reviewState: {
+        ...studyItem().reviewState,
+        dueAt: '2026-06-23T12:00:00.000Z',
+      },
+    }
+
+    expect(isStudyItemEligible(future)).toBe(true)
+    expect(isStudyItemDue(future, now)).toBe(false)
   })
 })

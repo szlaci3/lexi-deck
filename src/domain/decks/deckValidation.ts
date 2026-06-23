@@ -32,10 +32,6 @@ export function validateDeckInput(
     errors.name = 'Enter a deck name.'
   }
 
-  if (!value.description) {
-    errors.description = 'Enter a short description.'
-  }
-
   if (!isMyLanguage(value.myLanguage)) {
     errors.myLanguage = 'Choose English or Chinese.'
   }

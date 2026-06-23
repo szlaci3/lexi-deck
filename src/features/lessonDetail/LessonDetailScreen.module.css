@@ -59,8 +59,8 @@
 }
 
 .heroActions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, auto));
   gap: var(--space-3);
 }
 
@@ -81,10 +81,21 @@
   cursor: pointer;
 }
 
-.heroActions .createCardButton {
+.heroActions .studyAllButton {
   color: var(--color-ink);
   background: var(--color-accent-light);
   border-color: var(--color-accent-light);
+}
+
+.heroActions .studyDueButton {
+  color: var(--color-on-dark);
+  background: rgb(255 255 255 / 8%);
+  border-color: rgb(255 255 255 / 55%);
+}
+
+.heroActions .createCardButton {
+  color: var(--color-on-dark);
+  background: transparent;
 }
 
 .summaryGrid {
@@ -240,6 +251,7 @@
   .heroActions {
     width: 100%;
     display: grid;
+    grid-template-columns: 1fr;
   }
 
   .summaryGrid {
