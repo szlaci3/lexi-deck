@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { archiveSourceImage } from '../../db/repositories/sourceImageRepository'
 import type { SourceImage } from '../../domain/media/mediaTypes'
 import { useBlobUrl } from '../../hooks/useBlobUrl'
@@ -111,6 +112,11 @@ function SourceImageItem({
         <button type="button" onClick={onOpen}>
           View
         </button>
+        <Link
+          to={`/decks/${image.deckId}/lessons/${image.lessonId}/images/${image.id}/ocr`}
+        >
+          {image.ocrStatus === 'complete' ? 'Review OCR' : 'Run OCR'}
+        </Link>
         <button className={styles.archiveButton} type="button" onClick={onArchive}>
           Archive
         </button>
@@ -168,6 +174,12 @@ function SourceImageDetail({
           <dd>{new Date(image.createdAt).toLocaleString()}</dd>
         </div>
       </dl>
+      <Link
+        className={styles.ocrButton}
+        to={`/decks/${image.deckId}/lessons/${image.lessonId}/images/${image.id}/ocr`}
+      >
+        {image.ocrStatus === 'complete' ? 'Review OCR text' : 'Run mock OCR'}
+      </Link>
       <button className={styles.detailArchiveButton} type="button" onClick={onArchive}>
         Archive image
       </button>

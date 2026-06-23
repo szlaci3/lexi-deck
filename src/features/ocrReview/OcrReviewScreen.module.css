@@ -1,0 +1,243 @@
+.page {
+  display: grid;
+  gap: var(--space-7);
+}
+
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.breadcrumbs a {
+  color: var(--color-accent-strong);
+  font-weight: 800;
+}
+
+.hero {
+  padding: clamp(var(--space-7), 7vw, var(--space-10));
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-7);
+  color: var(--color-on-dark);
+  background:
+    radial-gradient(circle at 84% 18%, rgb(255 255 255 / 17%), transparent 28%),
+    var(--color-ink);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.hero h1 {
+  margin: var(--space-3) 0;
+  color: inherit;
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  line-height: 0.98;
+  letter-spacing: -0.06em;
+}
+
+.hero > div > p:last-child {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--color-on-dark-muted);
+  font-size: 1.05rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-accent-strong);
+  font-size: var(--font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.hero .eyebrow {
+  color: var(--color-accent-light);
+}
+
+.statusBadge {
+  min-height: 2.6rem;
+  padding: 0 var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  color: var(--color-ink);
+  font-weight: 850;
+  background: var(--color-accent-light);
+  border-radius: var(--radius-pill);
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(24rem, 1.1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.imagePanel,
+.textPanel {
+  padding: var(--space-6);
+  display: grid;
+  gap: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+.imagePanel h2,
+.textPanel h2 {
+  margin: var(--space-1) 0 0;
+  font-size: 1.7rem;
+}
+
+.imagePanel img {
+  width: 100%;
+  max-height: 72svh;
+  object-fit: contain;
+  background: var(--color-canvas);
+  border-radius: var(--radius-md);
+}
+
+.imagePanel > p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.textField {
+  display: grid;
+  gap: var(--space-2);
+  font-weight: 800;
+}
+
+.textField textarea {
+  width: 100%;
+  padding: var(--space-4);
+  resize: vertical;
+  color: var(--color-text);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  line-height: 1.6;
+}
+
+.intro,
+.rerunArea small {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.textMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.rerunArea {
+  padding-top: var(--space-5);
+  display: grid;
+  gap: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 3rem;
+  justify-self: start;
+  padding: 0 var(--space-5);
+  font: inherit;
+  font-weight: 850;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.primaryButton {
+  color: var(--color-on-accent);
+  background: var(--color-accent-strong);
+  border: 1px solid var(--color-accent-strong);
+}
+
+.secondaryButton {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.success,
+.error {
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+}
+
+.success {
+  color: var(--color-ink);
+  background: var(--color-accent-soft);
+}
+
+.error {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.status,
+.errorState {
+  margin-top: var(--space-10);
+}
+
+.status {
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.errorState {
+  padding: var(--space-8);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+.errorState h1 {
+  margin: var(--space-2) 0;
+}
+
+.errorState > p:not(.eyebrow) {
+  color: var(--color-text-muted);
+}
+
+.errorState a {
+  display: inline-flex;
+  margin-top: var(--space-4);
+  color: var(--color-accent-strong);
+  font-weight: 850;
+}
+
+@media (max-width: 54rem) {
+  .hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 28rem) {
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -60,13 +60,19 @@
 }
 
 .itemActions button,
+.itemActions a,
 .detailHeading button,
-.detailArchiveButton {
+.detailArchiveButton,
+.ocrButton {
   min-height: 2.5rem;
   padding: 0 var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--color-text);
   font: inherit;
   font-weight: 800;
+  text-decoration: none;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
@@ -142,6 +148,13 @@
 
 .detailArchiveButton {
   justify-self: start;
+}
+
+.ocrButton {
+  justify-self: start;
+  color: var(--color-on-accent);
+  background: var(--color-accent-strong);
+  border-color: var(--color-accent-strong);
 }
 
 .emptyState {

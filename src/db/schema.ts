@@ -14,3 +14,8 @@ export const databaseSchemaV2 = {
   sourceImages:
     'id, deckId, lessonId, [deckId+lessonId], createdAt, ocrStatus, archivedAt',
 } as const
+
+export const databaseSchemaV3 = {
+  ...databaseSchemaV2,
+  ocrTexts: 'id, &sourceImageId, provider, updatedAt',
+} as const
