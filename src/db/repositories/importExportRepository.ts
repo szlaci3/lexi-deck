@@ -11,6 +11,7 @@ import { planDatabaseMerge } from '../../domain/importExport/mergeDatabase'
 import type {
   ExportBundleV1,
   ImportSummary,
+  MediaImportSummary,
   MergePlan,
 } from '../../domain/importExport/exportTypes'
 import { validateImportBundle } from '../../domain/importExport/validateImportBundle'
@@ -18,6 +19,16 @@ import { nowIso } from '../../utils/dates'
 import { createId } from '../../utils/ids'
 import { db } from '../dexie'
 import type { ExportableCard } from '../../domain/importExport/cardTextExport'
+import {
+  createMediaBackupZip,
+  validateMediaExportPackage,
+} from '../../domain/importExport/mediaBackup'
+import type {
+  MediaExportPackageV2,
+  RestoredMediaPackageV2,
+  SourceImageExportRecord,
+} from '../../domain/importExport/mediaExportTypes'
+import { currentDataVersion } from '../migrations'
 
 const tables = [
   db.decks,
@@ -78,6 +89,48 @@ export async function exportDatabaseJson(): Promise<{
   return { bundle, json: serializeExportBundle(bundle) }
 }
 
+export async function exportMediaBackup(): Promise<{
+  mediaPackage: MediaExportPackageV2
+  blob: Blob
+}> {
+  const [
+    bundle,
+    sourceImages,
+    ocrTexts,
+    vocabularyCandidates,
+  ] = await Promise.all([
+    exportDatabase(),
+    db.sourceImages.toArray(),
+    db.ocrTexts.toArray(),
+    db.vocabularyCandidates.toArray(),
+  ])
+  const mediaPackage: MediaExportPackageV2 = {
+    manifest: {
+      appName: 'LexiDeck',
+      appVersion: APP_VERSION,
+      exportVersion: 2,
+      exportedAt: nowIso(),
+      dataVersion: currentDataVersion,
+      mediaIncluded: true,
+    },
+    decks: bundle.decks,
+    lessons: bundle.lessons,
+    cards: bundle.cards,
+    reviewStates: bundle.reviewStates,
+    reviewLogs: bundle.reviewLogs,
+    settings: bundle.settings,
+    knownWords: bundle.knownWords,
+    sourceImages: sourceImages.map(toSourceImageExportRecord),
+    ocrTexts,
+    vocabularyCandidates,
+  }
+  const imageBlobs = new Map(sourceImages.map((image) => [image.id, image.blob]))
+  return {
+    mediaPackage,
+    blob: await createMediaBackupZip(mediaPackage, imageBlobs),
+  }
+}
+
 export async function replaceDatabase(
   bundle: ExportBundleV1,
 ): Promise<ImportSummary> {
@@ -95,6 +148,97 @@ export async function replaceDatabase(
   const actual = await getDatabaseSummary()
   verifyImportedCounts(expected, actual)
   return actual
+}
+
+export async function replaceDatabaseWithMedia(
+  restoredPackage: RestoredMediaPackageV2,
+): Promise<MediaImportSummary> {
+  validateMediaExportPackage({
+    ...restoredPackage,
+    sourceImages: restoredPackage.sourceImages.map(toSourceImageExportRecord),
+  })
+  const coreBundle = toCoreBundle(restoredPackage)
+  const expected: MediaImportSummary = {
+    ...summarizeBundle(coreBundle),
+    sourceImages: restoredPackage.sourceImages.length,
+    ocrTexts: restoredPackage.ocrTexts.length,
+    vocabularyCandidates: restoredPackage.vocabularyCandidates.length,
+  }
+
+  await db.transaction('rw', [...destructiveImportTables], async () => {
+    await Promise.all(destructiveImportTables.map((table) => table.clear()))
+    await addBundle(coreBundle)
+    if (restoredPackage.sourceImages.length > 0) {
+      await db.sourceImages.bulkAdd(restoredPackage.sourceImages)
+    }
+    if (restoredPackage.ocrTexts.length > 0) {
+      await db.ocrTexts.bulkAdd(restoredPackage.ocrTexts)
+    }
+    if (restoredPackage.vocabularyCandidates.length > 0) {
+      await db.vocabularyCandidates.bulkAdd(
+        restoredPackage.vocabularyCandidates,
+      )
+    }
+  })
+
+  const actual = await getMediaDatabaseSummary()
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error('The restored media backup could not be verified.')
+  }
+  return actual
+}
+
+function toCoreBundle(
+  mediaPackage: RestoredMediaPackageV2,
+): ExportBundleV1 {
+  return {
+    manifest: {
+      appName: 'LexiDeck',
+      appVersion: mediaPackage.manifest.appVersion,
+      exportVersion: 1,
+      exportedAt: mediaPackage.manifest.exportedAt,
+      dataVersion: 1,
+      mediaIncluded: false,
+    },
+    decks: mediaPackage.decks,
+    lessons: mediaPackage.lessons,
+    cards: mediaPackage.cards,
+    reviewStates: mediaPackage.reviewStates,
+    reviewLogs: mediaPackage.reviewLogs,
+    settings: mediaPackage.settings,
+    knownWords: mediaPackage.knownWords,
+  }
+}
+
+function toSourceImageExportRecord(image: {
+  id: string
+  deckId: string
+  lessonId: string
+  fileName: string
+  mimeType: string
+  sizeBytes: number
+  width: number
+  height: number
+  ocrStatus: 'notStarted' | 'pending' | 'complete' | 'failed'
+  createdAt: string
+  updatedAt: string
+  archivedAt?: string
+}): SourceImageExportRecord {
+  return {
+    id: image.id,
+    deckId: image.deckId,
+    lessonId: image.lessonId,
+    fileName: image.fileName,
+    mimeType: image.mimeType,
+    sizeBytes: image.sizeBytes,
+    width: image.width,
+    height: image.height,
+    ocrStatus: image.ocrStatus,
+    createdAt: image.createdAt,
+    updatedAt: image.updatedAt,
+    archivedAt: image.archivedAt,
+    mediaPath: `media/source-images/${image.id}.blob`,
+  }
 }
 
 export async function analyzeDatabaseMerge(
@@ -141,6 +285,17 @@ export async function getDatabaseSummary(): Promise<ImportSummary> {
     settings: counts[5],
     knownWords: counts[6],
   }
+}
+
+async function getMediaDatabaseSummary(): Promise<MediaImportSummary> {
+  const [summary, sourceImages, ocrTexts, vocabularyCandidates] =
+    await Promise.all([
+      getDatabaseSummary(),
+      db.sourceImages.count(),
+      db.ocrTexts.count(),
+      db.vocabularyCandidates.count(),
+    ])
+  return { ...summary, sourceImages, ocrTexts, vocabularyCandidates }
 }
 
 export async function listExportableCards(): Promise<ExportableCard[]> {

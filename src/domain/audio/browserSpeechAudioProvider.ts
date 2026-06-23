@@ -14,7 +14,7 @@ function toAudioVoice(voice: SpeechSynthesisVoice): AudioVoice {
   }
 }
 
-export class BrowserSpeechAudioProvider implements AudioProvider {
+export class BrowserSpeechProvider implements AudioProvider {
   isAvailable(): boolean {
     return (
       typeof window !== 'undefined' &&

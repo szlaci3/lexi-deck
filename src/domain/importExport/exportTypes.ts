@@ -52,6 +52,12 @@ export type ImportSummary = {
   knownWords: number
 }
 
+export type MediaImportSummary = ImportSummary & {
+  sourceImages: number
+  ocrTexts: number
+  vocabularyCandidates: number
+}
+
 export type MergeSummary = ImportSummary & {
   renamedDecks: number
   remappedIds: number

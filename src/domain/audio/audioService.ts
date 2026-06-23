@@ -2,10 +2,10 @@ import type { Card } from '../cards/cardTypes'
 import type { AppSettings } from '../settings/settingsTypes'
 import type { AudioProvider, AudioVoice } from './audioProvider'
 import { getDutchAudioText } from './audioText'
-import { BrowserSpeechAudioProvider } from './browserSpeechAudioProvider'
+import { BrowserSpeechProvider } from './browserSpeechAudioProvider'
 import { listDutchVoices, selectDutchVoice } from './voiceSelection'
 
-const provider: AudioProvider = new BrowserSpeechAudioProvider()
+const provider: AudioProvider = new BrowserSpeechProvider()
 
 export type AudioAvailability = {
   supported: boolean

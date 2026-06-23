@@ -3,6 +3,7 @@ import styles from './DataManagementScreen.module.css'
 import { ExportDatabasePanel } from './ExportDatabasePanel'
 import { ImportDatabasePanel } from './ImportDatabasePanel'
 import { CardTextExportPanel } from './CardTextExportPanel'
+import { MediaBackupPanel } from './MediaBackupPanel'
 
 export function DataManagementScreen() {
   return (
@@ -21,6 +22,7 @@ export function DataManagementScreen() {
         <ImportDatabasePanel />
         <AdditiveImportPanel />
         <CardTextExportPanel />
+        <MediaBackupPanel />
       </div>
     </div>
   )
