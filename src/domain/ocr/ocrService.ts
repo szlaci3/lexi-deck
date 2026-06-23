@@ -1,13 +1,13 @@
 import type { SourceImage } from '../media/mediaTypes'
-import { MockOcrProvider } from './mockOcrProvider'
 import type { OcrProvider } from './ocrProvider'
-import type { OcrResult } from './ocrTypes'
+import type { OcrProgressHandler, OcrResult } from './ocrTypes'
+import { TesseractOcrProvider } from './tesseractOcrProvider'
 
-const provider: OcrProvider = new MockOcrProvider()
+const provider: OcrProvider = new TesseractOcrProvider()
 
-export function runMockOcr(
+export function runOcr(
   sourceImage: SourceImage,
-  testText?: string,
+  onProgress?: OcrProgressHandler,
 ): Promise<OcrResult> {
-  return provider.recognize({ sourceImage, testText })
+  return provider.recognize({ sourceImage }, onProgress)
 }

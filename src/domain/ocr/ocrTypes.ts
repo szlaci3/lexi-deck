@@ -1,6 +1,6 @@
 import type { SourceImage } from '../media/mediaTypes'
 
-export type OcrProviderName = 'mock'
+export type OcrProviderName = 'mock' | 'tesseract'
 
 export type OcrText = {
   id: string
@@ -15,7 +15,6 @@ export type OcrText = {
 
 export type OcrRequest = {
   sourceImage: SourceImage
-  testText?: string
 }
 
 export type OcrResult = {
@@ -23,3 +22,10 @@ export type OcrResult = {
   provider: OcrProviderName
   confidence: number
 }
+
+export type OcrProgress = {
+  status: string
+  progress: number
+}
+
+export type OcrProgressHandler = (progress: OcrProgress) => void

@@ -1,6 +1,9 @@
 import { normalizeOcrText } from '../../domain/ocr/normalizeOcrText'
-import { runMockOcr } from '../../domain/ocr/ocrService'
-import type { OcrText } from '../../domain/ocr/ocrTypes'
+import { runOcr } from '../../domain/ocr/ocrService'
+import type {
+  OcrProgressHandler,
+  OcrText,
+} from '../../domain/ocr/ocrTypes'
 import { nowIso } from '../../utils/dates'
 import { createId } from '../../utils/ids'
 import { db } from '../dexie'
@@ -21,7 +24,7 @@ export async function getOcrTextBySourceImageId(
 
 export async function runOcrForSourceImage(
   sourceImageId: string,
-  testText?: string,
+  onProgress?: OcrProgressHandler,
 ): Promise<OcrText> {
   const sourceImage = await db.sourceImages.get(sourceImageId)
 
@@ -37,12 +40,14 @@ export async function runOcrForSourceImage(
   })
 
   try {
-    const result = await runMockOcr(sourceImage, testText)
+    const result = await runOcr(sourceImage, onProgress)
     const rawText = result.rawText.trim()
     const normalizedText = normalizeOcrText(rawText)
 
     if (!normalizedText) {
-      throw new Error('Mock OCR did not return any text.')
+      throw new Error(
+        'No Dutch text was detected. Try a clearer, straighter, or more tightly cropped image.',
+      )
     }
 
     const existing = await getOcrTextBySourceImageId(sourceImageId)

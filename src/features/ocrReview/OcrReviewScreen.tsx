@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { extractCandidatesFromOcrText } from '../../db/repositories/candidateRepository'
 import { getDeckById } from '../../db/repositories/deckRepository'
 import { getLessonById } from '../../db/repositories/lessonRepository'
 import {
@@ -11,7 +12,6 @@ import { getSourceImageById } from '../../db/repositories/sourceImageRepository'
 import type { Deck } from '../../domain/decks/deckTypes'
 import type { Lesson } from '../../domain/lessons/lessonTypes'
 import type { SourceImage } from '../../domain/media/mediaTypes'
-import { MOCK_OCR_DEMO_TEXT } from '../../domain/ocr/mockOcrProvider'
 import type { OcrText } from '../../domain/ocr/ocrTypes'
 import { useBlobUrl } from '../../hooks/useBlobUrl'
 import styles from './OcrReviewScreen.module.css'
@@ -23,11 +23,17 @@ type OcrPageData = {
   ocrText?: OcrText
 }
 
+type ProgressState = {
+  status: string
+  progress: number
+}
+
 export function OcrReviewScreen() {
   const { deckId, lessonId, sourceImageId } = useParams()
+  const navigate = useNavigate()
   const [data, setData] = useState<OcrPageData>()
   const [draftText, setDraftText] = useState('')
-  const [testText, setTestText] = useState('')
+  const [ocrProgress, setOcrProgress] = useState<ProgressState>()
   const [isLoading, setIsLoading] = useState(true)
   const [isRunning, setIsRunning] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -35,12 +41,9 @@ export function OcrReviewScreen() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!deckId || !lessonId || !sourceImageId) {
-      return
-    }
+    if (!deckId || !lessonId || !sourceImageId) return
 
     let isActive = true
-
     Promise.all([
       getDeckById(deckId),
       getLessonById(lessonId),
@@ -48,9 +51,7 @@ export function OcrReviewScreen() {
       getOcrTextBySourceImageId(sourceImageId),
     ])
       .then(([deck, lesson, sourceImage, ocrText]) => {
-        if (!isActive) {
-          return
-        }
+        if (!isActive) return
 
         if (
           !deck ||
@@ -81,9 +82,7 @@ export function OcrReviewScreen() {
         }
       })
       .finally(() => {
-        if (isActive) {
-          setIsLoading(false)
-        }
+        if (isActive) setIsLoading(false)
       })
 
     return () => {
@@ -92,13 +91,12 @@ export function OcrReviewScreen() {
   }, [deckId, lessonId, sourceImageId])
 
   async function runOcr() {
-    if (!data) {
-      return
-    }
+    if (!data) return
 
     setIsRunning(true)
     setMessage('')
     setError('')
+    setOcrProgress({ status: 'Starting Dutch OCR', progress: 0 })
     setData((current) =>
       current
         ? {
@@ -111,7 +109,7 @@ export function OcrReviewScreen() {
     try {
       const ocrText = await runOcrForSourceImage(
         data.sourceImage.id,
-        testText || undefined,
+        setOcrProgress,
       )
       setDraftText(ocrText.rawText)
       setData((current) =>
@@ -123,7 +121,7 @@ export function OcrReviewScreen() {
             }
           : current,
       )
-      setMessage('Mock OCR text is ready for review.')
+      setMessage('Dutch OCR text is ready. Correct it before creating drafts.')
     } catch (runError: unknown) {
       setData((current) =>
         current
@@ -136,17 +134,16 @@ export function OcrReviewScreen() {
       setError(
         runError instanceof Error
           ? runError.message
-          : 'Mock OCR could not be completed.',
+          : 'Dutch OCR could not read this image.',
       )
     } finally {
       setIsRunning(false)
+      setOcrProgress(undefined)
     }
   }
 
-  async function saveText() {
-    if (!data) {
-      return
-    }
+  async function saveText(): Promise<OcrText | undefined> {
+    if (!data) return undefined
 
     setIsSaving(true)
     setMessage('')
@@ -155,12 +152,39 @@ export function OcrReviewScreen() {
       const ocrText = await updateOcrText(data.sourceImage.id, draftText)
       setDraftText(ocrText.rawText)
       setData((current) => (current ? { ...current, ocrText } : current))
-      setMessage('Corrected OCR text saved.')
+      setMessage('Reviewed OCR text saved.')
+      return ocrText
     } catch (saveError: unknown) {
       setError(
         saveError instanceof Error
           ? saveError.message
-          : 'The OCR text could not be saved.',
+          : 'The reviewed OCR text could not be saved.',
+      )
+      return undefined
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  async function saveAndReviewDrafts() {
+    if (!data) return
+
+    setIsSaving(true)
+    setMessage('')
+    setError('')
+    try {
+      const ocrText = await updateOcrText(data.sourceImage.id, draftText)
+      setDraftText(ocrText.rawText)
+      setData((current) => (current ? { ...current, ocrText } : current))
+      await extractCandidatesFromOcrText(ocrText.id)
+      navigate(
+        `/decks/${data.deck.id}/lessons/${data.lesson.id}/images/${data.sourceImage.id}/candidates`,
+      )
+    } catch (draftError: unknown) {
+      setError(
+        draftError instanceof Error
+          ? draftError.message
+          : 'Draft cards could not be created from the reviewed text.',
       )
     } finally {
       setIsSaving(false)
@@ -187,16 +211,14 @@ export function OcrReviewScreen() {
         <p className={styles.eyebrow}>OCR unavailable</p>
         <h1>We could not open this source image.</h1>
         <p>{error}</p>
-        <Link to={lessonId && deckId ? `/decks/${deckId}/lessons/${lessonId}` : '/'}>
+        <Link to={`/decks/${deckId}/lessons/${lessonId}`}>
           Back to lesson
         </Link>
       </section>
     )
   }
 
-  if (!data) {
-    return null
-  }
+  if (!data) return null
 
   const { deck, lesson, sourceImage, ocrText } = data
 
@@ -216,11 +238,11 @@ export function OcrReviewScreen() {
 
       <section className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>Mock OCR</p>
+          <p className={styles.eyebrow}>Dutch OCR</p>
           <h1>Review extracted text</h1>
           <p>
-            Run deterministic mock OCR, compare its text with the page, and
-            correct anything before candidate extraction.
+            Text is read from this image in your browser. Correct the result
+            before LexiDeck proposes draft cards.
           </p>
         </div>
         <span className={styles.statusBadge}>
@@ -245,13 +267,13 @@ export function OcrReviewScreen() {
         <section className={styles.textPanel}>
           <div>
             <p className={styles.eyebrow}>Extracted content</p>
-            <h2>{ocrText ? 'OCR text' : 'Run mock OCR'}</h2>
+            <h2>{ocrText ? 'Editable OCR text' : 'Run Dutch OCR'}</h2>
           </div>
 
           {ocrText ? (
             <>
               <label className={styles.textField}>
-                Corrected OCR text
+                Reviewed OCR text
                 <textarea
                   value={draftText}
                   rows={18}
@@ -259,59 +281,65 @@ export function OcrReviewScreen() {
                 />
               </label>
               <div className={styles.textMeta}>
-                <span>Provider: Mock OCR</span>
+                <span>Provider: {formatProvider(ocrText.provider)}</span>
                 <span>Confidence: {formatConfidence(ocrText.confidence)}</span>
                 <span>
                   Updated: {new Date(ocrText.updatedAt).toLocaleString()}
                 </span>
               </div>
-              <button
-                className={styles.primaryButton}
-                type="button"
-                disabled={isSaving || !draftText.trim()}
-                onClick={() => void saveText()}
-              >
-                {isSaving ? 'Saving…' : 'Save corrected text'}
-              </button>
-              <Link
-                className={styles.candidateButton}
-                to={`/decks/${deck.id}/lessons/${lesson.id}/images/${sourceImage.id}/candidates`}
-              >
-                Review vocabulary candidates
-              </Link>
+              <div className={styles.actionRow}>
+                <button
+                  className={styles.primaryButton}
+                  type="button"
+                  disabled={isSaving || !draftText.trim()}
+                  onClick={() => void saveText()}
+                >
+                  {isSaving ? 'Saving…' : 'Save reviewed text'}
+                </button>
+                <button
+                  className={styles.candidateButton}
+                  type="button"
+                  disabled={isSaving || !draftText.trim()}
+                  onClick={() => void saveAndReviewDrafts()}
+                >
+                  Save and review draft cards
+                </button>
+              </div>
             </>
           ) : (
             <p className={styles.intro}>
-              The mock provider uses stable demo text unless you supply custom
-              test text below. It does not inspect the image or contact a
-              remote service.
+              OCR uses the Dutch language model and the actual optimized image.
+              Processing happens locally; no image is sent to an OCR service.
             </p>
           )}
 
           <div className={styles.rerunArea}>
-            <label className={styles.textField}>
-              Mock test text (optional)
-              <textarea
-                value={testText}
-                rows={6}
-                placeholder={MOCK_OCR_DEMO_TEXT}
-                onChange={(event) => setTestText(event.target.value)}
-              />
-            </label>
+            {ocrProgress ? (
+              <div className={styles.progressArea} role="status">
+                <div>
+                  <span>{ocrProgress.status}</span>
+                  <strong>{Math.round(ocrProgress.progress * 100)}%</strong>
+                </div>
+                <progress max="1" value={ocrProgress.progress} />
+              </div>
+            ) : null}
             <small>
-              Leave this empty to use LexiDeck’s deterministic demo result.
+              OCR may take a while on mobile devices. Existing reviewed text is
+              kept if a rerun fails.
             </small>
             <button
-              className={ocrText ? styles.secondaryButton : styles.primaryButton}
+              className={
+                ocrText ? styles.secondaryButton : styles.primaryButton
+              }
               type="button"
               disabled={isRunning}
               onClick={() => void runOcr()}
             >
               {isRunning
-                ? 'Running mock OCR…'
+                ? 'Reading image…'
                 : ocrText
-                  ? 'Run mock OCR again'
-                  : 'Run mock OCR'}
+                  ? 'Run Dutch OCR again'
+                  : 'Run Dutch OCR'}
             </button>
           </div>
         </section>
@@ -349,4 +377,8 @@ function formatOcrStatus(status: SourceImage['ocrStatus']): string {
 
 function formatConfidence(confidence: number): string {
   return `${Math.round(confidence * 100)}%`
+}
+
+function formatProvider(provider: OcrText['provider']): string {
+  return provider === 'tesseract' ? 'Tesseract.js (Dutch)' : 'Legacy mock OCR'
 }

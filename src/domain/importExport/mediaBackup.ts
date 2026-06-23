@@ -222,7 +222,7 @@ export function validateMediaExportPackage(
       !imageIds.has(rawOcrText.sourceImageId) ||
       typeof rawOcrText.rawText !== 'string' ||
       typeof rawOcrText.normalizedText !== 'string' ||
-      rawOcrText.provider !== 'mock' ||
+      !['mock', 'tesseract'].includes(String(rawOcrText.provider)) ||
       typeof rawOcrText.confidence !== 'number' ||
       !isIsoString(rawOcrText.createdAt) ||
       !isIsoString(rawOcrText.updatedAt)

@@ -62,7 +62,18 @@ function mediaPackage(): MediaExportPackageV2 {
         mediaPath: 'media/source-images/image-1.blob',
       },
     ],
-    ocrTexts: [],
+    ocrTexts: [
+      {
+        id: 'ocr-1',
+        sourceImageId: 'image-1',
+        rawText: 'de fiets',
+        normalizedText: 'de fiets',
+        provider: 'tesseract',
+        confidence: 0.87,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+    ],
     vocabularyCandidates: [],
   }
 }
@@ -79,6 +90,7 @@ describe('media backup v2', () => {
     expect(restored.manifest.exportVersion).toBe(2)
     expect(restored.sourceImages[0]?.blob.size).toBe(4)
     expect(await restored.sourceImages[0]?.blob.text()).toBe('page')
+    expect(restored.ocrTexts[0]?.provider).toBe('tesseract')
   })
 
   it('rejects unsafe media paths', () => {

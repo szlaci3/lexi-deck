@@ -183,7 +183,7 @@ function SourceImageDetail({
         className={styles.ocrButton}
         to={`/decks/${image.deckId}/lessons/${image.lessonId}/images/${image.id}/ocr`}
       >
-        {image.ocrStatus === 'complete' ? 'Review OCR text' : 'Run mock OCR'}
+        {image.ocrStatus === 'complete' ? 'Review OCR text' : 'Run OCR'}
       </Link>
       <Link
         className={styles.cardButton}
