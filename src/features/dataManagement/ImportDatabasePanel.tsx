@@ -12,6 +12,7 @@ import { downloadTextFile } from '../../utils/download'
 import { ImportPreview } from './ImportPreview'
 import { readImportFile } from './dataFile'
 import styles from './DataPanel.module.css'
+import { recordBackupExport } from './exportHistory'
 
 type SafetyStatus = 'pending' | 'downloaded' | 'skipped'
 
@@ -57,6 +58,7 @@ export function ImportDatabasePanel() {
         json,
         createExportFilename(safetyBundle.manifest.exportedAt),
       )
+      recordBackupExport(safetyBundle.manifest.exportedAt, 'database')
       setSafetyStatus('downloaded')
     } catch (safetyError: unknown) {
       setError(

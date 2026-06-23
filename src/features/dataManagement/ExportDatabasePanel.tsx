@@ -3,6 +3,7 @@ import { exportDatabaseJson } from '../../db/repositories/importExportRepository
 import { createExportFilename } from '../../domain/importExport/exportDatabase'
 import { downloadTextFile } from '../../utils/download'
 import styles from './DataPanel.module.css'
+import { recordBackupExport } from './exportHistory'
 
 export function ExportDatabasePanel() {
   const [isExporting, setIsExporting] = useState(false)
@@ -17,6 +18,7 @@ export function ExportDatabasePanel() {
     try {
       const { bundle, json } = await exportDatabaseJson()
       downloadTextFile(json, createExportFilename(bundle.manifest.exportedAt))
+      recordBackupExport(bundle.manifest.exportedAt, 'database')
       setMessage('Database export downloaded.')
     } catch (exportError: unknown) {
       setError(

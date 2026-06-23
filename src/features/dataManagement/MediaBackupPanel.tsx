@@ -11,6 +11,7 @@ import type { MediaImportSummary } from '../../domain/importExport/exportTypes'
 import type { RestoredMediaPackageV2 } from '../../domain/importExport/mediaExportTypes'
 import { downloadBlob } from '../../utils/download'
 import styles from './DataPanel.module.css'
+import { recordBackupExport } from './exportHistory'
 
 type SafetyStatus = 'pending' | 'downloaded' | 'skipped'
 
@@ -32,6 +33,7 @@ export function MediaBackupPanel() {
     try {
       const { mediaPackage, blob } = await exportMediaBackup()
       downloadBlob(blob, createMediaBackupFilename(mediaPackage.manifest.exportedAt))
+      recordBackupExport(mediaPackage.manifest.exportedAt, 'media')
       if (isSafetyExport) {
         setSafetyStatus('downloaded')
       } else {

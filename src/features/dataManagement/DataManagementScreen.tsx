@@ -4,6 +4,7 @@ import { ExportDatabasePanel } from './ExportDatabasePanel'
 import { ImportDatabasePanel } from './ImportDatabasePanel'
 import { CardTextExportPanel } from './CardTextExportPanel'
 import { MediaBackupPanel } from './MediaBackupPanel'
+import { DataSafetyPanel } from './DataSafetyPanel'
 
 export function DataManagementScreen() {
   return (
@@ -23,6 +24,7 @@ export function DataManagementScreen() {
         <AdditiveImportPanel />
         <CardTextExportPanel />
         <MediaBackupPanel />
+        <DataSafetyPanel />
       </div>
     </div>
   )

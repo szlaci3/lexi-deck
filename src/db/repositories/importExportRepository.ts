@@ -188,6 +188,12 @@ export async function replaceDatabaseWithMedia(
   return actual
 }
 
+export async function clearLocalData(): Promise<void> {
+  await db.transaction('rw', [...destructiveImportTables], async () => {
+    await Promise.all(destructiveImportTables.map((table) => table.clear()))
+  })
+}
+
 function toCoreBundle(
   mediaPackage: RestoredMediaPackageV2,
 ): ExportBundleV1 {
