@@ -249,25 +249,6 @@ export function DeckDetailScreen() {
         />
       ) : null}
 
-      <section className={styles.summaryGrid} aria-label="Deck summary">
-        <article>
-          <span>Lessons</span>
-          <strong>{lessonCount}</strong>
-        </article>
-        <article>
-          <span>Cards</span>
-          <strong>{cardCount}</strong>
-        </article>
-        <article>
-          <span>Due now</span>
-          <strong>{dueCount}</strong>
-        </article>
-        <article>
-          <span>My Language</span>
-          <strong>{myLanguageLabels[deck.myLanguage]}</strong>
-        </article>
-      </section>
-
       <section className={styles.contentGrid}>
         <div className={styles.lessons}>
           <div className={styles.sectionHeading}>
@@ -361,6 +342,25 @@ export function DeckDetailScreen() {
             Archive deck
           </button>
         </aside>
+      </section>
+      
+      <section className={styles.summaryGrid} aria-label="Deck summary">
+        <article>
+          <span>Lessons</span>
+          <strong>{lessonCount}</strong>
+        </article>
+        <article>
+          <span>Cards</span>
+          <strong>{cardCount}</strong>
+        </article>
+        <article>
+          <span>Due now</span>
+          <strong>{dueCount}</strong>
+        </article>
+        <article>
+          <span>My Language</span>
+          <strong>{myLanguageLabels[deck.myLanguage]}</strong>
+        </article>
       </section>
     </div>
   )

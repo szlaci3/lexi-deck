@@ -167,6 +167,10 @@ export function CardForm({
           placeholder={
             deck.myLanguage === 'en' ? 'cucumber' : '输入简体中文提示'
           }
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
+            autoComplete="off"
         />
         {errors.frontText ? (
           <small className={styles.error}>{errors.frontText}</small>
@@ -201,6 +205,11 @@ export function CardForm({
             }}
             aria-invalid={Boolean(errors.backDutch)}
             placeholder="komkommer"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
+            autoComplete="off"
+
           />
           {errors.backDutch ? (
             <small className={styles.error}>{errors.backDutch}</small>
