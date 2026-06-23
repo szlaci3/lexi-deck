@@ -115,6 +115,7 @@ export function ImportDatabasePanel() {
       <p className={styles.error}>
         Export v1 excludes media. Replacing the database will also remove
         locally stored source images, and the safety export cannot restore them.
+        Image-front cards will remain, but their images will be unavailable.
       </p>
 
       {bundle ? (

@@ -11,6 +11,7 @@ import {
 } from '../../db/repositories/reviewRepository'
 import { getSettings } from '../../db/repositories/settingsRepository'
 import type { DeckSummary } from '../../domain/decks/deckTypes'
+import { getCardPresentation } from '../../domain/cards/cardPresentation'
 import type { StudyItem } from '../../domain/srs/dueCards'
 import { previewReviewIntervals } from '../../domain/srs/scheduleReview'
 import type { SrsRating } from '../../domain/srs/srsTypes'
@@ -121,7 +122,11 @@ export function StudySessionScreen() {
 
   function revealAnswer() {
     setIsRevealed(true)
-    if (settings?.autoPlayAudio) {
+    if (
+      settings?.autoPlayAudio &&
+      currentItem &&
+      getCardPresentation(currentItem.card).dutchOnAnswer
+    ) {
       void playAudio()
     }
   }

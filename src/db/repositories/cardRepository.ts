@@ -1,10 +1,18 @@
 import type {
   Card,
   CreateCardInput,
+  CreateImageCardInput,
   UpdateCardInput,
 } from '../../domain/cards/cardTypes'
-import { createCardRecords } from '../../domain/cards/cardFactory'
-import { validateCardInput } from '../../domain/cards/cardValidation'
+import {
+  createCardRecords,
+  createImageCardRecords,
+  createReverseCardRecords,
+} from '../../domain/cards/cardFactory'
+import {
+  validateCardInput,
+  validateImageCardInput,
+} from '../../domain/cards/cardValidation'
 import {
   detectCardDuplicates,
   type DuplicateDetectionResult,
@@ -75,6 +83,87 @@ export async function createCardWithInitialReviewState(
     await db.reviewStates.add(reviewState)
   })
 
+  return card
+}
+
+export async function createImageCardWithInitialReviewState(
+  input: CreateImageCardInput,
+): Promise<Card> {
+  const result = validateImageCardInput(input)
+  if (!result.valid) {
+    throw new Error(
+      Object.values(result.errors)[0] ?? 'The image card is invalid.',
+    )
+  }
+  await assertActiveLocation(input.deckId, result.value.lessonId)
+  const imageId = result.value.frontImageId
+  if (!imageId) {
+    throw new Error('Choose a source image.')
+  }
+  const sourceImage = await db.sourceImages.get(imageId)
+  if (
+    !sourceImage ||
+    sourceImage.archivedAt ||
+    sourceImage.deckId !== input.deckId ||
+    sourceImage.lessonId !== result.value.lessonId
+  ) {
+    throw new Error('The selected source image is unavailable.')
+  }
+
+  const timestamp = nowIso()
+  const { card, reviewState } = createImageCardRecords(
+    { deckId: input.deckId, ...result.value },
+    { cardId: createId(), reviewStateId: createId() },
+    timestamp,
+  )
+  await db.transaction('rw', db.cards, db.reviewStates, async () => {
+    await db.cards.add(card)
+    await db.reviewStates.add(reviewState)
+  })
+  return card
+}
+
+export async function createReverseCard(
+  sourceCardId: string,
+): Promise<Card> {
+  const source = await getCardById(sourceCardId)
+  if (!source || source.archivedAt) {
+    throw new CardNotFoundError()
+  }
+  if (source.cardType !== 'myLanguageToDutch') {
+    throw new Error('Only My Language to Dutch cards can be reversed.')
+  }
+  await assertActiveLocation(source.deckId, source.lessonId)
+
+  const existingReverse = await db.cards
+    .filter(
+      (card) =>
+        !card.archivedAt &&
+        card.cardType === 'dutchToMyLanguage' &&
+        card.relatedCardId === source.id,
+    )
+    .first()
+  if (existingReverse) {
+    throw new Error('This card already has an active reverse card.')
+  }
+
+  const timestamp = nowIso()
+  const { card, reviewState } = createReverseCardRecords(
+    source,
+    { cardId: createId(), reviewStateId: createId() },
+    timestamp,
+  )
+  const linkedSource = {
+    ...source,
+    relatedCardId: card.id,
+    updatedAt: timestamp,
+  }
+
+  await db.transaction('rw', db.cards, db.reviewStates, async () => {
+    await db.cards.put(linkedSource)
+    await db.cards.add(card)
+    await db.reviewStates.add(reviewState)
+  })
   return card
 }
 

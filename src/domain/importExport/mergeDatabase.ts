@@ -72,7 +72,7 @@ export function planDatabaseMerge(
   })
 
   const comparisonCards: Card[] = [...existing.cards]
-  const cards = imported.cards.flatMap((card) => {
+  const unlinkedCards = imported.cards.flatMap((card) => {
     const deckId = deckIdMap.get(card.deckId)
     const lessonId = lessonIdMap.get(card.lessonId)
     if (!deckId || !lessonId) {
@@ -101,6 +101,12 @@ export function planDatabaseMerge(
     summary.cards += 1
     return [importedCard]
   })
+  const cards = unlinkedCards.map((card) => ({
+    ...card,
+    relatedCardId: card.relatedCardId
+      ? cardIdMap.get(card.relatedCardId)
+      : undefined,
+  }))
 
   const importedCardIds = new Set(cards.map((card) => card.id))
   const reviewStateCardIds = new Set<string>()
@@ -230,6 +236,7 @@ function uniqueDeckName(name: string, usedNames: Set<string>): string {
 
 function isExactCardDuplicate(left: Card, right: Card): boolean {
   return (
+    left.cardType === right.cardType &&
     normalizeText(left.frontText) === normalizeText(right.frontText) &&
     normalizedDutch(left) === normalizedDutch(right)
   )

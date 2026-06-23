@@ -61,6 +61,24 @@ export async function getSourceImageById(
   return db.sourceImages.get(id)
 }
 
+export async function getSourceImagesByIds(
+  ids: string[],
+): Promise<Map<string, SourceImage>> {
+  const uniqueIds = [...new Set(ids)]
+  if (uniqueIds.length === 0) {
+    return new Map()
+  }
+  const images = await db.sourceImages.bulkGet(uniqueIds)
+  return new Map(
+    images
+      .filter(
+        (image): image is SourceImage =>
+          image !== undefined && !image.archivedAt,
+      )
+      .map((image) => [image.id, image]),
+  )
+}
+
 export async function listActiveSourceImagesByLessonId(
   lessonId: string,
 ): Promise<SourceImage[]> {
@@ -80,6 +98,19 @@ export async function archiveSourceImage(id: string): Promise<void> {
 
   if (!image) {
     throw new SourceImageNotFoundError()
+  }
+  const activeImageCard = await db.cards
+    .filter(
+      (card) =>
+        !card.archivedAt &&
+        card.frontImageId === id &&
+        (card.cardType === 'imageToDutch' || card.cardType === 'dutchToImage'),
+    )
+    .first()
+  if (activeImageCard) {
+    throw new Error(
+      'Archive the active image card before archiving its source image.',
+    )
   }
 
   const timestamp = nowIso()

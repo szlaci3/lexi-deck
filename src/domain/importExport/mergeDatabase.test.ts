@@ -215,4 +215,33 @@ describe('planDatabaseMerge', () => {
       reviewCount: 4,
     })
   })
+
+  it('remaps relationships between imported reverse cards', () => {
+    const plan = planDatabaseMerge(
+      bundle(),
+      bundle({
+        decks: [deck],
+        lessons: [lesson],
+        cards: [
+          { ...card, relatedCardId: 'card-2' },
+          {
+            ...card,
+            id: 'card-2',
+            cardType: 'dutchToMyLanguage',
+            relatedCardId: 'card-1',
+          },
+        ],
+      }),
+      (() => {
+        let id = 0
+        return () => `generated-${++id}`
+      })(),
+      timestamp,
+    )
+
+    const first = plan.bundle.cards[0]
+    const second = plan.bundle.cards[1]
+    expect(first?.relatedCardId).toBe(second?.id)
+    expect(second?.relatedCardId).toBe(first?.id)
+  })
 })

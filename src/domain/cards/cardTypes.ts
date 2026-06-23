@@ -1,4 +1,8 @@
-export type CardType = 'myLanguageToDutch'
+export type CardType =
+  | 'myLanguageToDutch'
+  | 'imageToDutch'
+  | 'dutchToMyLanguage'
+  | 'dutchToImage'
 export type DutchArticle = 'de' | 'het' | 'none' | 'unknown'
 
 export const dutchArticleLabels: Record<DutchArticle, string> = {
@@ -21,6 +25,7 @@ export type Card = {
   notes: string
   audioAssetId?: string
   sourceCandidateId?: string
+  relatedCardId?: string
   createdAt: string
   updatedAt: string
   suspendedAt?: string
@@ -35,4 +40,15 @@ export type CreateCardInput = Pick<
 export type UpdateCardInput = Pick<
   Card,
   'lessonId' | 'frontText' | 'backDutch' | 'article' | 'notes'
+>
+
+export type CreateImageCardInput = Pick<
+  Card,
+  | 'deckId'
+  | 'lessonId'
+  | 'frontImageId'
+  | 'backDutch'
+  | 'backMyLanguage'
+  | 'article'
+  | 'notes'
 >

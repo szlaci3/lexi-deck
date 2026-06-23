@@ -4,16 +4,20 @@ import {
   stopDutchAudio,
 } from '../../domain/audio/audioService'
 import { getDutchDisplayText } from '../../domain/cards/cardDisplay'
+import { getCardPresentation } from '../../domain/cards/cardPresentation'
 import type { Card } from '../../domain/cards/cardTypes'
 import type { Deck } from '../../domain/decks/deckTypes'
 import { myLanguageLabels } from '../../domain/decks/deckTypes'
+import type { SourceImage } from '../../domain/media/mediaTypes'
 import type { AppSettings } from '../../domain/settings/settingsTypes'
+import { useBlobUrl } from '../../hooks/useBlobUrl'
 import styles from './CardPreview.module.css'
 
 type CardPreviewProps = {
   card: Card
   deck: Deck
   settings: AppSettings
+  image?: SourceImage
   onClose: () => void
 }
 
@@ -21,11 +25,14 @@ export function CardPreview({
   card,
   deck,
   settings,
+  image,
   onClose,
 }: CardPreviewProps) {
   const [isRevealed, setIsRevealed] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioError, setAudioError] = useState('')
+  const presentation = getCardPresentation(card)
+  const myLanguageLabel = myLanguageLabels[deck.myLanguage]
 
   useEffect(() => stopDutchAudio, [])
 
@@ -46,7 +53,7 @@ export function CardPreview({
 
   function revealAnswer() {
     setIsRevealed(true)
-    if (settings.autoPlayAudio) {
+    if (settings.autoPlayAudio && presentation.dutchOnAnswer) {
       void playAudio()
     }
   }
@@ -68,8 +75,34 @@ export function CardPreview({
       </div>
 
       <div className={styles.studyCard}>
-        <span>{myLanguageLabels[deck.myLanguage]}</span>
-        <strong>{card.frontText}</strong>
+        <span>
+          {formatLanguageLabel(presentation.promptLanguage, myLanguageLabel)}
+        </span>
+        {presentation.promptKind === 'image' ? (
+          image ? (
+            <PreviewImage image={image} />
+          ) : (
+            <strong>Image unavailable</strong>
+          )
+        ) : (
+          <strong>{presentation.promptText}</strong>
+        )}
+        {presentation.dutchOnPrompt ? (
+          <button
+            className={styles.audioButton}
+            type="button"
+            onClick={() => void playAudio()}
+            disabled={isPlaying}
+            aria-label={`Play Dutch pronunciation for ${getDutchDisplayText(card)}`}
+          >
+            {isPlaying ? 'Playing…' : 'Play Dutch audio'}
+          </button>
+        ) : null}
+        {audioError && presentation.dutchOnPrompt ? (
+          <p className={styles.audioError} role="alert">
+            {audioError}
+          </p>
+        ) : null}
 
         {!isRevealed ? (
           <button
@@ -81,19 +114,37 @@ export function CardPreview({
           </button>
         ) : (
           <div className={styles.answer}>
-            <span>Dutch</span>
-            <strong>{getDutchDisplayText(card)}</strong>
+            <span>
+              {formatLanguageLabel(
+                presentation.answerLanguage,
+                myLanguageLabel,
+              )}
+            </span>
+            {presentation.answerKind === 'image' ? (
+              image ? (
+                <PreviewImage image={image} />
+              ) : (
+                <strong>Image unavailable</strong>
+              )
+            ) : (
+              <strong>{presentation.answerText}</strong>
+            )}
+            {presentation.secondaryAnswerText ? (
+              <p>{presentation.secondaryAnswerText}</p>
+            ) : null}
             {card.notes ? <p>{card.notes}</p> : null}
-            <button
-              className={styles.audioButton}
-              type="button"
-              onClick={() => void playAudio()}
-              disabled={isPlaying}
-              aria-label={`Play Dutch pronunciation for ${getDutchDisplayText(card)}`}
-            >
-              {isPlaying ? 'Playing…' : 'Play Dutch audio'}
-            </button>
-            {audioError ? (
+            {presentation.dutchOnAnswer ? (
+              <button
+                className={styles.audioButton}
+                type="button"
+                onClick={() => void playAudio()}
+                disabled={isPlaying}
+                aria-label={`Play Dutch pronunciation for ${getDutchDisplayText(card)}`}
+              >
+                {isPlaying ? 'Playing…' : 'Play Dutch audio'}
+              </button>
+            ) : null}
+            {audioError && presentation.dutchOnAnswer ? (
               <p className={styles.audioError} role="alert">
                 {audioError}
               </p>
@@ -103,4 +154,24 @@ export function CardPreview({
       </div>
     </section>
   )
+}
+
+function PreviewImage({ image }: { image: SourceImage }) {
+  const url = useBlobUrl(image.blob)
+  return (
+    <img
+      className={styles.previewImage}
+      src={url}
+      alt={`Card image from ${image.fileName}`}
+    />
+  )
+}
+
+function formatLanguageLabel(
+  language: 'myLanguage' | 'dutch' | 'image',
+  myLanguageLabel: string,
+): string {
+  if (language === 'dutch') return 'Dutch'
+  if (language === 'image') return 'Image'
+  return myLanguageLabel
 }

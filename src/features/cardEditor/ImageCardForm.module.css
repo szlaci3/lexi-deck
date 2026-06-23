@@ -1,0 +1,148 @@
+.form {
+  padding: var(--space-7);
+  display: grid;
+  gap: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.heading p {
+  margin: 0;
+  color: var(--color-accent-strong);
+  font-size: var(--font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.heading h2 {
+  margin: var(--space-1) 0 0;
+  font-size: 2rem;
+}
+
+.form label {
+  display: grid;
+  gap: var(--space-2);
+  font-weight: 800;
+}
+
+.form input,
+.form select,
+.form textarea {
+  width: 100%;
+  min-height: 3rem;
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.form textarea {
+  resize: vertical;
+}
+
+.imagePreview {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.imagePreview img {
+  width: 100%;
+  max-height: 28rem;
+  object-fit: contain;
+  background: var(--color-canvas);
+  border-radius: var(--radius-md);
+}
+
+.imagePreview span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.dutchFields {
+  display: grid;
+  grid-template-columns: minmax(10rem, 0.35fr) minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.preview {
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-1);
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-md);
+}
+
+.preview span {
+  color: var(--color-accent-strong);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+}
+
+.preview strong {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+}
+
+.heading button,
+.actions button {
+  min-height: 2.75rem;
+  padding: 0 var(--space-5);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 850;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.actions .primaryButton {
+  color: var(--color-on-accent);
+  background: var(--color-accent-strong);
+  border-color: var(--color-accent-strong);
+}
+
+.actions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.error {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 36rem) {
+  .form {
+    padding: var(--space-5);
+  }
+
+  .dutchFields {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}

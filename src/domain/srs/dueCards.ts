@@ -1,6 +1,7 @@
 import type { Card } from '../cards/cardTypes'
 import type { Deck } from '../decks/deckTypes'
 import type { Lesson } from '../lessons/lessonTypes'
+import type { SourceImage } from '../media/mediaTypes'
 import type { ReviewState } from './srsTypes'
 
 export type StudyItem = {
@@ -8,6 +9,7 @@ export type StudyItem = {
   reviewState: ReviewState
   deck: Deck
   lesson: Lesson
+  image?: SourceImage
 }
 
 export function isStudyItemDue(item: StudyItem, now: string): boolean {

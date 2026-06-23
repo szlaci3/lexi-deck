@@ -117,6 +117,11 @@ function SourceImageItem({
         >
           {image.ocrStatus === 'complete' ? 'Review OCR' : 'Run OCR'}
         </Link>
+        <Link
+          to={`/decks/${image.deckId}/cards?lessonId=${image.lessonId}&imageId=${image.id}&createImage=1`}
+        >
+          Create card
+        </Link>
         <button className={styles.archiveButton} type="button" onClick={onArchive}>
           Archive
         </button>
@@ -179,6 +184,12 @@ function SourceImageDetail({
         to={`/decks/${image.deckId}/lessons/${image.lessonId}/images/${image.id}/ocr`}
       >
         {image.ocrStatus === 'complete' ? 'Review OCR text' : 'Run mock OCR'}
+      </Link>
+      <Link
+        className={styles.cardButton}
+        to={`/decks/${image.deckId}/cards?lessonId=${image.lessonId}&imageId=${image.id}&createImage=1`}
+      >
+        Create image card
       </Link>
       <button className={styles.detailArchiveButton} type="button" onClick={onArchive}>
         Archive image

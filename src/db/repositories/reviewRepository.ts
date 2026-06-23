@@ -1,5 +1,6 @@
 import type { ReviewLog, SrsRating } from '../../domain/srs/srsTypes'
 import type { StudyItem } from '../../domain/srs/dueCards'
+import type { SourceImage } from '../../domain/media/mediaTypes'
 import { isStudyItemDue } from '../../domain/srs/dueCards'
 import { scheduleReview } from '../../domain/srs/scheduleReview'
 import { createId } from '../../utils/ids'
@@ -65,6 +66,18 @@ export async function listDueStudyItems({
   const stateByCardId = new Map(
     dueStates.map((reviewState) => [reviewState.cardId, reviewState]),
   )
+  const imageIds = filteredCards.flatMap((card) =>
+    card.frontImageId ? [card.frontImageId] : [],
+  )
+  const images = await db.sourceImages.bulkGet([...new Set(imageIds)])
+  const imageById = new Map(
+    images
+      .filter(
+        (image): image is SourceImage =>
+          image !== undefined && !image.archivedAt,
+      )
+      .map((image) => [image.id, image]),
+  )
 
   return filteredCards
     .flatMap((card): StudyItem[] => {
@@ -73,7 +86,17 @@ export async function listDueStudyItems({
       const reviewState = stateByCardId.get(card.id)
 
       return deck && lesson && reviewState
-        ? [{ card, deck, lesson, reviewState }]
+        ? [
+            {
+              card,
+              deck,
+              lesson,
+              reviewState,
+              image: card.frontImageId
+                ? imageById.get(card.frontImageId)
+                : undefined,
+            },
+          ]
         : []
     })
     .filter((item) => isStudyItemDue(item, now))

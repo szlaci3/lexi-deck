@@ -135,6 +135,9 @@ function validateRelationships(bundle: ExportBundleV1, errors: string[]) {
         `cards[${index}].lessonId does not reference a lesson in its deck.`,
       )
     }
+    if (card.relatedCardId && !cardIds.has(card.relatedCardId)) {
+      errors.push(`cards[${index}].relatedCardId does not reference a card.`)
+    }
   })
   bundle.reviewStates.forEach((reviewState, index) => {
     if (!cardIds.has(reviewState.cardId)) {
@@ -206,12 +209,31 @@ function validateCard(record: RecordValue, path: string, errors: string[]) {
   validateEntityBase(record, path, errors)
   requireString(record, 'deckId', path, errors)
   requireString(record, 'lessonId', path, errors)
-  requireEnum(record, 'cardType', ['myLanguageToDutch'], path, errors)
-  requireString(record, 'frontText', path, errors)
+  requireEnum(
+    record,
+    'cardType',
+    [
+      'myLanguageToDutch',
+      'imageToDutch',
+      'dutchToMyLanguage',
+      'dutchToImage',
+    ],
+    path,
+    errors,
+  )
+  const isImageCard =
+    record.cardType === 'imageToDutch' || record.cardType === 'dutchToImage'
+  requireString(record, 'frontText', path, errors, isImageCard)
+  if (isImageCard) {
+    requireString(record, 'frontImageId', path, errors)
+  } else {
+    optionalString(record, 'frontImageId', path, errors)
+  }
   requireString(record, 'backDutch', path, errors)
-  requireString(record, 'backMyLanguage', path, errors)
+  requireString(record, 'backMyLanguage', path, errors, isImageCard)
   requireEnum(record, 'article', ['de', 'het', 'none', 'unknown'], path, errors)
   requireString(record, 'notes', path, errors, true)
+  optionalString(record, 'relatedCardId', path, errors)
   optionalIsoString(record, 'suspendedAt', path, errors)
   optionalIsoString(record, 'archivedAt', path, errors)
 }

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { createCardRecords } from './cardFactory'
+import {
+  createCardRecords,
+  createImageCardRecords,
+  createReverseCardRecords,
+} from './cardFactory'
 
 describe('createCardRecords', () => {
   it('creates a My Language to Dutch card and immediately due review state', () => {
@@ -37,5 +41,43 @@ describe('createCardRecords', () => {
       createdAt: timestamp,
       updatedAt: timestamp,
     })
+  })
+
+  it('creates image and reverse cards with independent review states', () => {
+    const timestamp = '2026-06-22T12:00:00.000Z'
+    const image = createImageCardRecords(
+      {
+        deckId: 'deck-1',
+        lessonId: 'lesson-1',
+        frontImageId: 'image-1',
+        backDutch: 'huis',
+        backMyLanguage: 'house',
+        article: 'het',
+        notes: '',
+      },
+      { cardId: 'image-card', reviewStateId: 'image-review' },
+      timestamp,
+    )
+    const reverse = createReverseCardRecords(
+      {
+        ...image.card,
+        id: 'source-card',
+        cardType: 'myLanguageToDutch',
+        frontText: 'house',
+      },
+      { cardId: 'reverse-card', reviewStateId: 'reverse-review' },
+      timestamp,
+    )
+
+    expect(image.card).toMatchObject({
+      cardType: 'imageToDutch',
+      frontImageId: 'image-1',
+    })
+    expect(reverse.card).toMatchObject({
+      id: 'reverse-card',
+      cardType: 'dutchToMyLanguage',
+      relatedCardId: 'source-card',
+    })
+    expect(reverse.reviewState.cardId).toBe('reverse-card')
   })
 })

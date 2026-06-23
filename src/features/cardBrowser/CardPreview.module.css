@@ -75,6 +75,15 @@
   line-height: 1.05;
 }
 
+.previewImage {
+  width: 100%;
+  max-height: 24rem;
+  margin-top: var(--space-4);
+  object-fit: contain;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
 .revealButton {
   margin-top: var(--space-8);
   color: var(--color-on-accent);

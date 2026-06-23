@@ -8,6 +8,8 @@ import {
 import {
   archiveCard,
   createCardWithInitialReviewState,
+  createImageCardWithInitialReviewState,
+  createReverseCard,
   findCardDuplicates,
   listActiveCardsByDeckId,
   suspendCard,
@@ -17,18 +19,27 @@ import {
 import { getDeckSummary } from '../../db/repositories/deckRepository'
 import { listActiveLessonsByDeckId } from '../../db/repositories/lessonRepository'
 import { getSettings } from '../../db/repositories/settingsRepository'
+import {
+  getSourceImageById,
+  getSourceImagesByIds,
+} from '../../db/repositories/sourceImageRepository'
 import { getDutchDisplayText } from '../../domain/cards/cardDisplay'
+import { getCardPresentation } from '../../domain/cards/cardPresentation'
 import type {
   Card,
   CreateCardInput,
+  CreateImageCardInput,
   UpdateCardInput,
 } from '../../domain/cards/cardTypes'
 import { myLanguageLabels, type DeckSummary } from '../../domain/decks/deckTypes'
 import type { DuplicateDetectionResult } from '../../domain/duplicates/duplicateDetection'
 import { normalizeText } from '../../domain/duplicates/normalizeText'
 import type { Lesson } from '../../domain/lessons/lessonTypes'
+import type { SourceImage } from '../../domain/media/mediaTypes'
 import type { AppSettings } from '../../domain/settings/settingsTypes'
+import { useBlobUrl } from '../../hooks/useBlobUrl'
 import { CardForm } from '../cardEditor/CardForm'
+import { ImageCardForm } from '../cardEditor/ImageCardForm'
 import { CardPreview } from './CardPreview'
 import styles from './CardBrowserScreen.module.css'
 
@@ -37,6 +48,8 @@ type CardBrowserData = {
   lessons: Lesson[]
   cards: Card[]
   settings: AppSettings
+  sourceImages: Map<string, SourceImage>
+  selectedImage?: SourceImage
 }
 
 export function CardBrowserScreen() {
@@ -44,11 +57,15 @@ export function CardBrowserScreen() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const initialLessonId = searchParams.get('lessonId') ?? ''
+  const selectedImageId = searchParams.get('imageId') ?? ''
   const [data, setData] = useState<CardBrowserData>()
   const [search, setSearch] = useState('')
   const [lessonFilter, setLessonFilter] = useState(initialLessonId)
   const [isFormOpen, setIsFormOpen] = useState(
     searchParams.get('create') === '1',
+  )
+  const [isImageFormOpen, setIsImageFormOpen] = useState(
+    searchParams.get('createImage') === '1',
   )
   const [editingCard, setEditingCard] = useState<Card>()
   const [previewCard, setPreviewCard] = useState<Card>()
@@ -65,12 +82,16 @@ export function CardBrowserScreen() {
     setError('')
 
     try {
-      const [deckSummary, lessons, cards, settings] = await Promise.all([
+      const [deckSummary, lessons, cards, settings, selectedImage] =
+        await Promise.all([
         getDeckSummary(deckId),
         listActiveLessonsByDeckId(deckId),
         listActiveCardsByDeckId(deckId),
         getSettings(),
-      ])
+          selectedImageId
+            ? getSourceImageById(selectedImageId)
+            : Promise.resolve(undefined),
+        ])
 
       if (!deckSummary) {
         setData(undefined)
@@ -78,7 +99,22 @@ export function CardBrowserScreen() {
         return
       }
 
-      setData({ deckSummary, lessons, cards, settings })
+      const sourceImages = await getSourceImagesByIds(
+        cards.flatMap((card) => (card.frontImageId ? [card.frontImageId] : [])),
+      )
+      setData({
+        deckSummary,
+        lessons,
+        cards,
+        settings,
+        sourceImages,
+        selectedImage:
+          selectedImage &&
+          !selectedImage.archivedAt &&
+          selectedImage.deckId === deckId
+            ? selectedImage
+            : undefined,
+      })
     } catch (loadError: unknown) {
       setError(
         loadError instanceof Error
@@ -88,7 +124,7 @@ export function CardBrowserScreen() {
     } finally {
       setIsLoading(false)
     }
-  }, [deckId])
+  }, [deckId, selectedImageId])
 
   useEffect(() => {
     let isActive = true
@@ -102,8 +138,11 @@ export function CardBrowserScreen() {
       listActiveLessonsByDeckId(deckId),
       listActiveCardsByDeckId(deckId),
       getSettings(),
+      selectedImageId
+        ? getSourceImageById(selectedImageId)
+        : Promise.resolve(undefined),
     ])
-      .then(([deckSummary, lessons, cards, settings]) => {
+      .then(async ([deckSummary, lessons, cards, settings, selectedImage]) => {
         if (!isActive) {
           return
         }
@@ -113,7 +152,27 @@ export function CardBrowserScreen() {
           return
         }
 
-        setData({ deckSummary, lessons, cards, settings })
+        const sourceImages = await getSourceImagesByIds(
+          cards.flatMap((card) =>
+            card.frontImageId ? [card.frontImageId] : [],
+          ),
+        )
+        if (!isActive) {
+          return
+        }
+        setData({
+          deckSummary,
+          lessons,
+          cards,
+          settings,
+          sourceImages,
+          selectedImage:
+            selectedImage &&
+            !selectedImage.archivedAt &&
+            selectedImage.deckId === deckId
+              ? selectedImage
+              : undefined,
+        })
       })
       .catch((loadError: unknown) => {
         if (isActive) {
@@ -133,7 +192,7 @@ export function CardBrowserScreen() {
     return () => {
       isActive = false
     }
-  }, [deckId])
+  }, [deckId, selectedImageId])
 
   const filteredCards = useMemo(() => {
     if (!data) {
@@ -143,10 +202,12 @@ export function CardBrowserScreen() {
     const normalizedSearch = normalizeText(search)
     return data.cards.filter((card) => {
       const matchesLesson = !lessonFilter || card.lessonId === lessonFilter
+      const presentation = getCardPresentation(card)
       const matchesSearch =
         !normalizedSearch ||
         normalizeText(card.frontText).includes(normalizedSearch) ||
         normalizeText(getDutchDisplayText(card)).includes(normalizedSearch) ||
+        normalizeText(presentation.answerText).includes(normalizedSearch) ||
         normalizeText(card.notes).includes(normalizedSearch)
 
       return matchesLesson && matchesSearch
@@ -155,6 +216,7 @@ export function CardBrowserScreen() {
 
   function openCreateForm() {
     setEditingCard(undefined)
+    setIsImageFormOpen(false)
     setIsFormOpen(true)
   }
 
@@ -166,6 +228,10 @@ export function CardBrowserScreen() {
   function closeForm() {
     setEditingCard(undefined)
     setIsFormOpen(false)
+  }
+
+  function closeImageForm() {
+    setIsImageFormOpen(false)
   }
 
   async function saveCard(input: UpdateCardInput) {
@@ -189,6 +255,29 @@ export function CardBrowserScreen() {
     await loadData()
   }
 
+  async function saveImageCard(input: CreateImageCardInput) {
+    if (!deckId) return
+    await createImageCardWithInitialReviewState(input)
+    closeImageForm()
+    navigate(`/decks/${deckId}/cards?lessonId=${input.lessonId}`, {
+      replace: true,
+    })
+    await loadData()
+  }
+
+  async function generateReverse(card: Card) {
+    try {
+      await createReverseCard(card.id)
+      await loadData()
+    } catch (reverseError: unknown) {
+      setError(
+        reverseError instanceof Error
+          ? reverseError.message
+          : 'The reverse card could not be created.',
+      )
+    }
+  }
+
   async function checkDuplicates(
     input: CreateCardInput,
     excludeCardId?: string,
@@ -197,7 +286,12 @@ export function CardBrowserScreen() {
   }
 
   async function confirmArchive(card: Card) {
-    if (!window.confirm(`Archive the card “${card.frontText}”?`)) {
+    const presentation = getCardPresentation(card)
+    const label =
+      presentation.promptKind === 'image'
+        ? 'this image card'
+        : `the card “${presentation.promptText}”`
+    if (!window.confirm(`Archive ${label}?`)) {
       return
     }
 
@@ -265,7 +359,7 @@ export function CardBrowserScreen() {
           <p className={styles.eyebrow}>Card browser</p>
           <h1>{deck.name}</h1>
           <p>
-            {myLanguageLabels[deck.myLanguage]} prompts with Dutch answers.
+            Browse text, image, and reverse study directions for this deck.
           </p>
         </div>
         <button
@@ -297,12 +391,32 @@ export function CardBrowserScreen() {
         />
       ) : null}
 
+      {isImageFormOpen && data.selectedImage ? (
+        <ImageCardForm
+          deck={deck}
+          image={data.selectedImage}
+          onCancel={closeImageForm}
+          onSubmit={saveImageCard}
+        />
+      ) : null}
+
+      {isImageFormOpen && !data.selectedImage ? (
+        <p className={styles.inlineError} role="alert">
+          The selected source image is unavailable.
+        </p>
+      ) : null}
+
       {previewCard ? (
         <CardPreview
           key={previewCard.id}
           card={previewCard}
           deck={deck}
           settings={data.settings}
+          image={
+            previewCard.frontImageId
+              ? data.sourceImages.get(previewCard.frontImageId)
+              : undefined
+          }
           onClose={() => setPreviewCard(undefined)}
         />
       ) : null}
@@ -349,7 +463,7 @@ export function CardBrowserScreen() {
           </strong>
           <p>
             {data.cards.length === 0
-              ? 'Create the first My Language → Dutch card for this deck.'
+              ? 'Create the first card for this deck.'
               : 'Try another search or lesson.'}
           </p>
           {data.cards.length === 0 && data.lessons.length > 0 ? (
@@ -364,52 +478,171 @@ export function CardBrowserScreen() {
             const lesson = lessonById.get(card.lessonId)
 
             return (
-              <article
-                className={`${styles.card} ${
-                  card.suspendedAt ? styles.suspendedCard : ''
-                }`}
+              <CardBrowserItem
                 key={card.id}
-              >
-                <div className={styles.cardContent}>
-                  <div className={styles.cardMeta}>
-                    <span>{lesson?.title ?? 'Unknown lesson'}</span>
-                    {card.suspendedAt ? <span>Suspended</span> : null}
-                  </div>
-                  <div className={styles.cardSides}>
-                    <div>
-                      <span>{myLanguageLabels[deck.myLanguage]}</span>
-                      <strong>{card.frontText}</strong>
-                    </div>
-                    <div>
-                      <span>Dutch</span>
-                      <strong>{getDutchDisplayText(card)}</strong>
-                    </div>
-                  </div>
-                  {card.notes ? <p className={styles.notes}>{card.notes}</p> : null}
-                </div>
-                <div className={styles.cardActions}>
-                  <button type="button" onClick={() => setPreviewCard(card)}>
-                    Preview
-                  </button>
-                  <button type="button" onClick={() => openEditForm(card)}>
-                    Edit
-                  </button>
-                  <button type="button" onClick={() => void toggleSuspended(card)}>
-                    {card.suspendedAt ? 'Unsuspend' : 'Suspend'}
-                  </button>
-                  <button
-                    className={styles.archiveButton}
-                    type="button"
-                    onClick={() => void confirmArchive(card)}
-                  >
-                    Archive
-                  </button>
-                </div>
-              </article>
+                card={card}
+                deckLanguageLabel={myLanguageLabels[deck.myLanguage]}
+                lessonTitle={lesson?.title ?? 'Unknown lesson'}
+                image={
+                  card.frontImageId
+                    ? data.sourceImages.get(card.frontImageId)
+                    : undefined
+                }
+                onPreview={() => setPreviewCard(card)}
+                onEdit={() => openEditForm(card)}
+                onReverse={() => void generateReverse(card)}
+                canCreateReverse={
+                  !card.relatedCardId ||
+                  !data.cards.some(
+                    (relatedCard) => relatedCard.id === card.relatedCardId,
+                  )
+                }
+                onToggleSuspended={() => void toggleSuspended(card)}
+                onArchive={() => void confirmArchive(card)}
+              />
             )
           })}
         </div>
       )}
     </div>
   )
+}
+
+type CardBrowserItemProps = {
+  card: Card
+  deckLanguageLabel: string
+  lessonTitle: string
+  image?: SourceImage
+  onPreview: () => void
+  onEdit: () => void
+  onReverse: () => void
+  canCreateReverse: boolean
+  onToggleSuspended: () => void
+  onArchive: () => void
+}
+
+function CardBrowserItem({
+  card,
+  deckLanguageLabel,
+  lessonTitle,
+  image,
+  onPreview,
+  onEdit,
+  onReverse,
+  canCreateReverse,
+  onToggleSuspended,
+  onArchive,
+}: CardBrowserItemProps) {
+  const presentation = getCardPresentation(card)
+
+  return (
+    <article
+      className={`${styles.card} ${
+        card.suspendedAt ? styles.suspendedCard : ''
+      }`}
+    >
+      <div className={styles.cardContent}>
+        <div className={styles.cardMeta}>
+          <span>{lessonTitle}</span>
+          <span>{formatCardType(card.cardType)}</span>
+          {card.suspendedAt ? <span>Suspended</span> : null}
+        </div>
+        <div className={styles.cardSides}>
+          <div>
+            <span>
+              {formatPresentationLabel(
+                presentation.promptLanguage,
+                deckLanguageLabel,
+              )}
+            </span>
+            {presentation.promptKind === 'image' ? (
+              image ? (
+                <CardImage image={image} />
+              ) : (
+                <strong>Image unavailable</strong>
+              )
+            ) : (
+              <strong>{presentation.promptText}</strong>
+            )}
+          </div>
+          <div>
+            <span>
+              {formatPresentationLabel(
+                presentation.answerLanguage,
+                deckLanguageLabel,
+              )}
+            </span>
+            {presentation.answerKind === 'image' ? (
+              image ? (
+                <CardImage image={image} />
+              ) : (
+                <strong>Image unavailable</strong>
+              )
+            ) : (
+              <strong>{presentation.answerText}</strong>
+            )}
+          </div>
+        </div>
+        {card.notes ? <p className={styles.notes}>{card.notes}</p> : null}
+      </div>
+      <div className={styles.cardActions}>
+        <button type="button" onClick={onPreview}>
+          Preview
+        </button>
+        {card.cardType === 'myLanguageToDutch' ? (
+          <>
+            <button type="button" onClick={onEdit}>
+              Edit
+            </button>
+            {canCreateReverse ? (
+              <button type="button" onClick={onReverse}>
+                Create reverse
+              </button>
+            ) : null}
+          </>
+        ) : null}
+        <button type="button" onClick={onToggleSuspended}>
+          {card.suspendedAt ? 'Unsuspend' : 'Suspend'}
+        </button>
+        <button
+          className={styles.archiveButton}
+          type="button"
+          onClick={onArchive}
+        >
+          Archive
+        </button>
+      </div>
+    </article>
+  )
+}
+
+function CardImage({ image }: { image: SourceImage }) {
+  const url = useBlobUrl(image.blob)
+  return (
+    <img
+      className={styles.cardImage}
+      src={url}
+      alt={`Card prompt from ${image.fileName}`}
+      loading="lazy"
+    />
+  )
+}
+
+function formatPresentationLabel(
+  language: 'myLanguage' | 'dutch' | 'image',
+  myLanguageLabel: string,
+): string {
+  if (language === 'dutch') return 'Dutch'
+  if (language === 'image') return 'Image'
+  return myLanguageLabel
+}
+
+function formatCardType(cardType: Card['cardType']): string {
+  const labels: Record<Card['cardType'], string> = {
+    myLanguageToDutch: 'My Language → Dutch',
+    imageToDutch: 'Image → Dutch',
+    dutchToMyLanguage: 'Dutch → My Language',
+    dutchToImage: 'Dutch → Image',
+  }
+  return labels[cardType]
 }

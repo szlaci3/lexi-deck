@@ -118,4 +118,78 @@ describe('validateImportBundle', () => {
     })
     expect(result.valid).toBe(false)
   })
+
+  it('accepts related reverse and image card types', () => {
+    const deck = {
+      id: 'deck-1',
+      name: 'Deck',
+      description: 'Description',
+      myLanguage: 'en' as const,
+      targetLanguage: 'nl' as const,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }
+    const lesson = {
+      id: 'lesson-1',
+      deckId: deck.id,
+      title: 'Lesson',
+      description: 'Description',
+      order: 1,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }
+    const cards = [
+      {
+        id: 'card-1',
+        deckId: deck.id,
+        lessonId: lesson.id,
+        cardType: 'myLanguageToDutch' as const,
+        frontText: 'house',
+        backDutch: 'huis',
+        backMyLanguage: 'house',
+        article: 'het' as const,
+        notes: '',
+        relatedCardId: 'card-2',
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+      {
+        id: 'card-2',
+        deckId: deck.id,
+        lessonId: lesson.id,
+        cardType: 'dutchToMyLanguage' as const,
+        frontText: 'house',
+        backDutch: 'huis',
+        backMyLanguage: 'house',
+        article: 'het' as const,
+        notes: '',
+        relatedCardId: 'card-1',
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+      {
+        id: 'card-3',
+        deckId: deck.id,
+        lessonId: lesson.id,
+        cardType: 'imageToDutch' as const,
+        frontText: '',
+        frontImageId: 'image-1',
+        backDutch: 'huis',
+        backMyLanguage: '',
+        article: 'het' as const,
+        notes: '',
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+    ]
+
+    expect(
+      validateImportBundle({
+        ...validBundle,
+        decks: [deck],
+        lessons: [lesson],
+        cards,
+      }).valid,
+    ).toBe(true)
+  })
 })

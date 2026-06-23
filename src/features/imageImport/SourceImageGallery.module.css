@@ -63,7 +63,8 @@
 .itemActions a,
 .detailHeading button,
 .detailArchiveButton,
-.ocrButton {
+.ocrButton,
+.cardButton {
   min-height: 2.5rem;
   padding: 0 var(--space-4);
   display: inline-flex;
@@ -155,6 +156,13 @@
   color: var(--color-on-accent);
   background: var(--color-accent-strong);
   border-color: var(--color-accent-strong);
+}
+
+.cardButton {
+  justify-self: start;
+  color: var(--color-ink);
+  background: var(--color-accent-light);
+  border-color: var(--color-accent-light);
 }
 
 .emptyState {
