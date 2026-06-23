@@ -1,18 +1,33 @@
 import type {
   AppSettings,
-  AudioSettingsInput,
+  SettingsInput,
 } from '../../domain/settings/settingsTypes'
-import { validateAudioSettings } from '../../domain/settings/settingsValidation'
+import { validateSettings } from '../../domain/settings/settingsValidation'
 import { nowIso } from '../../utils/dates'
 import { db } from '../dexie'
 
 const settingsId = 'app-settings'
+export const defaultDailyNewCardLimit = 20
+export const defaultDailyReviewLimit = 200
 
 export async function getSettings(): Promise<AppSettings> {
   const existingSettings = await db.settings.get(settingsId)
 
   if (existingSettings) {
-    return existingSettings
+    const migratedSettings: AppSettings = {
+      ...existingSettings,
+      dailyNewCardLimit:
+        existingSettings.dailyNewCardLimit ?? defaultDailyNewCardLimit,
+      dailyReviewLimit:
+        existingSettings.dailyReviewLimit ?? defaultDailyReviewLimit,
+    }
+    if (
+      existingSettings.dailyNewCardLimit === undefined ||
+      existingSettings.dailyReviewLimit === undefined
+    ) {
+      await db.settings.put(migratedSettings)
+    }
+    return migratedSettings
   }
 
   const timestamp = nowIso()
@@ -20,6 +35,8 @@ export async function getSettings(): Promise<AppSettings> {
     id: settingsId,
     autoPlayAudio: true,
     speechRate: 1,
+    dailyNewCardLimit: defaultDailyNewCardLimit,
+    dailyReviewLimit: defaultDailyReviewLimit,
     createdAt: timestamp,
     updatedAt: timestamp,
   }
@@ -28,10 +45,10 @@ export async function getSettings(): Promise<AppSettings> {
   return defaultSettings
 }
 
-export async function updateAudioSettings(
-  input: AudioSettingsInput,
+export async function updateSettings(
+  input: SettingsInput,
 ): Promise<AppSettings> {
-  const result = validateAudioSettings(input)
+  const result = validateSettings(input)
 
   if (!result.valid) {
     throw new Error(result.error)

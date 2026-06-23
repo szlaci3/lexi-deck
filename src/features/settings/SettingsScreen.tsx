@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import {
   getSettings,
-  updateAudioSettings,
+  updateSettings,
 } from '../../db/repositories/settingsRepository'
 import {
   getAudioAvailability,
@@ -69,9 +69,9 @@ export function SettingsScreen() {
     setError('')
 
     try {
-      const updatedSettings = await updateAudioSettings(settings)
+      const updatedSettings = await updateSettings(settings)
       setSettings(updatedSettings)
-      setMessage('Audio settings saved.')
+      setMessage('Settings saved.')
     } catch (saveError: unknown) {
       setError(
         saveError instanceof Error
@@ -128,7 +128,7 @@ export function SettingsScreen() {
         <p>Settings</p>
         <h1>Shape your study experience.</h1>
         <span>
-          Choose how Dutch pronunciation behaves when answers are revealed.
+          Choose study workload and Dutch pronunciation behavior.
         </span>
       </header>
 
@@ -211,6 +211,53 @@ export function SettingsScreen() {
             <small>Faster</small>
           </div>
         </label>
+
+        <div className={styles.sectionDivider}>
+          <p>Daily workload</p>
+          <h2>Study limits</h2>
+          <span>
+            Limits are global across all decks. Reviews are selected before new
+            cards, and overdue reviews count toward the review limit.
+          </span>
+        </div>
+
+        <div className={styles.limitFields}>
+          <label className={styles.field}>
+            <span>Daily new card limit</span>
+            <input
+              type="number"
+              min="0"
+              max="500"
+              step="1"
+              value={settings.dailyNewCardLimit}
+              onChange={(event) =>
+                setSettings({
+                  ...settings,
+                  dailyNewCardLimit: Number(event.target.value),
+                })
+              }
+            />
+            <small>Default: 20. Use 0 to pause new cards.</small>
+          </label>
+
+          <label className={styles.field}>
+            <span>Daily review limit</span>
+            <input
+              type="number"
+              min="0"
+              max="5000"
+              step="1"
+              value={settings.dailyReviewLimit}
+              onChange={(event) =>
+                setSettings({
+                  ...settings,
+                  dailyReviewLimit: Number(event.target.value),
+                })
+              }
+            />
+            <small>Default: 200. Overdue cards respect this limit.</small>
+          </label>
+        </div>
 
         {availability.supported && availability.voices.length === 0 ? (
           <p className={styles.warning} role="status">

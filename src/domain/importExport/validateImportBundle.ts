@@ -275,6 +275,8 @@ function validateSettings(record: RecordValue, path: string, errors: string[]) {
   requireBoolean(record, 'autoPlayAudio', path, errors)
   requireNumber(record, 'speechRate', path, errors)
   optionalString(record, 'preferredVoiceURI', path, errors)
+  optionalIntegerRange(record, 'dailyNewCardLimit', 0, 500, path, errors)
+  optionalIntegerRange(record, 'dailyReviewLimit', 0, 5000, path, errors)
 }
 
 function validateKnownWord(record: RecordValue, path: string, errors: string[]) {
@@ -343,6 +345,28 @@ function optionalNumber(
     (typeof record[key] !== 'number' || !Number.isFinite(record[key]))
   ) {
     errors.push(`${path}.${key} must be a finite number when present.`)
+  }
+}
+
+function optionalIntegerRange(
+  record: RecordValue,
+  key: string,
+  minimum: number,
+  maximum: number,
+  path: string,
+  errors: string[],
+) {
+  const value = record[key]
+  if (
+    value !== undefined &&
+    (typeof value !== 'number' ||
+      !Number.isInteger(value) ||
+      value < minimum ||
+      value > maximum)
+  ) {
+    errors.push(
+      `${path}.${key} must be a whole number from ${minimum} to ${maximum} when present.`,
+    )
   }
 }
 

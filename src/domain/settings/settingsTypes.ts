@@ -3,13 +3,17 @@ export type AppSettings = {
   autoPlayAudio: boolean
   preferredVoiceURI?: string
   speechRate: number
-  dailyNewCardLimit?: number
-  dailyReviewLimit?: number
+  dailyNewCardLimit: number
+  dailyReviewLimit: number
   createdAt: string
   updatedAt: string
 }
 
-export type AudioSettingsInput = Pick<
+export type SettingsInput = Pick<
   AppSettings,
-  'autoPlayAudio' | 'preferredVoiceURI' | 'speechRate'
+  | 'autoPlayAudio'
+  | 'preferredVoiceURI'
+  | 'speechRate'
+  | 'dailyNewCardLimit'
+  | 'dailyReviewLimit'
 >

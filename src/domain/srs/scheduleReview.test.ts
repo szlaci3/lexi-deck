@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ReviewState, SrsRating } from './srsTypes'
 import {
+  calculateRetrievability,
   formatInterval,
   previewReviewIntervals,
   scheduleReview,
@@ -31,7 +32,7 @@ describe('scheduleReview', () => {
     ['good', '3 days', '2026-06-25T12:00:00.000Z'],
     ['easy', '7 days', '2026-06-29T12:00:00.000Z'],
   ] as const)(
-    'uses the locked first-review interval for %s',
+    'preserves the first-review interval for %s',
     (rating, label, dueAt) => {
       const result = scheduleReview({
         reviewState: reviewState(),
@@ -41,42 +42,105 @@ describe('scheduleReview', () => {
 
       expect(result.intervalLabel).toBe(label)
       expect(result.reviewState.dueAt).toBe(dueAt)
-      expect(result.reviewState.reviewCount).toBe(1)
+      expect(result.reviewState.stability).toBe(result.reviewState.intervalDays)
     },
   )
 
-  it.each([
-    ['again', 10 / 1440, 3],
-    ['hard', 12, 2],
-    ['good', 22, 2],
-    ['easy', 35, 2],
-  ] as const)(
-    'uses the later-review model for %s',
-    (rating, intervalDays, lapses) => {
-      const result = scheduleReview({
-        reviewState: reviewState({
-          intervalDays: 10,
-          reviewCount: 4,
-          lapses: 2,
-        }),
-        rating,
-        reviewedAt,
-      })
+  it('uses elapsed time, stability, and difficulty for later reviews', () => {
+    const onTime = scheduleReview({
+      reviewState: reviewState({
+        intervalDays: 10,
+        stability: 10,
+        difficulty: 5,
+        reviewCount: 4,
+        lastReviewedAt: '2026-06-12T12:00:00.000Z',
+      }),
+      rating: 'good',
+      reviewedAt,
+    })
+    const overdue = scheduleReview({
+      reviewState: reviewState({
+        intervalDays: 10,
+        stability: 10,
+        difficulty: 5,
+        reviewCount: 4,
+        lastReviewedAt: '2026-06-02T12:00:00.000Z',
+      }),
+      rating: 'good',
+      reviewedAt,
+    })
 
-      expect(result.reviewState.intervalDays).toBeCloseTo(intervalDays)
-      expect(result.reviewState.lapses).toBe(lapses)
-      expect(result.reviewState.reviewCount).toBe(5)
-    },
-  )
+    expect(overdue.reviewState.intervalDays).toBeGreaterThan(
+      onTime.reviewState.intervalDays,
+    )
+    expect(onTime.reviewState.difficulty).toBeLessThan(5)
+  })
 
-  it('produces all four interval previews from the scheduler', () => {
-    const previews = previewReviewIntervals(reviewState(), reviewedAt)
+  it('reduces future stability when a card has accumulated lapses', () => {
+    const stable = reviewState({
+      intervalDays: 10,
+      stability: 10,
+      reviewCount: 4,
+      lapses: 0,
+      lastReviewedAt: '2026-06-12T12:00:00.000Z',
+    })
+    const withoutLapses = scheduleReview({
+      reviewState: stable,
+      rating: 'good',
+      reviewedAt,
+    })
+    const withLapses = scheduleReview({
+      reviewState: { ...stable, lapses: 5 },
+      rating: 'good',
+      reviewedAt,
+    })
 
-    expect(
-      (Object.keys(previews) as SrsRating[]).map(
-        (rating) => previews[rating].intervalLabel,
-      ),
-    ).toEqual(['10 min', '1 day', '3 days', '7 days'])
+    expect(withLapses.reviewState.stability).toBeLessThan(
+      withoutLapses.reviewState.stability ?? 0,
+    )
+  })
+
+  it('resets Again to ten minutes and increases lapses and difficulty', () => {
+    const result = scheduleReview({
+      reviewState: reviewState({
+        intervalDays: 20,
+        stability: 20,
+        difficulty: 6,
+        reviewCount: 4,
+        lapses: 2,
+        lastReviewedAt: '2026-06-02T12:00:00.000Z',
+      }),
+      rating: 'again',
+      reviewedAt,
+    })
+
+    expect(result.intervalLabel).toBe('10 min')
+    expect(result.reviewState.lapses).toBe(3)
+    expect(result.reviewState.difficulty).toBeGreaterThan(6)
+    expect(result.reviewState.stability).toBeLessThan(20)
+  })
+
+  it('estimates 90% retrievability after one stability interval', () => {
+    expect(calculateRetrievability(10, 10)).toBeCloseTo(0.9)
+  })
+
+  it('produces all four dynamic interval previews', () => {
+    const previews = previewReviewIntervals(
+      reviewState({
+        intervalDays: 10,
+        stability: 10,
+        reviewCount: 2,
+        lastReviewedAt: '2026-06-12T12:00:00.000Z',
+      }),
+      reviewedAt,
+    )
+    const intervals = (Object.keys(previews) as SrsRating[]).map(
+      (rating) => previews[rating].reviewState.intervalDays,
+    )
+
+    expect(intervals[0]).toBeCloseTo(10 / 1440)
+    expect(intervals[1]).toBeLessThan(intervals[2] ?? 0)
+    expect(intervals[2]).toBeLessThan(intervals[3] ?? 0)
   })
 
   it('formats singular and plural day intervals', () => {

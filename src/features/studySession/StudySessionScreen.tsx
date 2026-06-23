@@ -6,7 +6,7 @@ import {
 } from '../../domain/audio/audioService'
 import { getDeckSummary } from '../../db/repositories/deckRepository'
 import {
-  listDueStudyItems,
+  listLimitedStudyItems,
   submitReview,
 } from '../../db/repositories/reviewRepository'
 import { getSettings } from '../../db/repositories/settingsRepository'
@@ -16,6 +16,7 @@ import type { StudyItem } from '../../domain/srs/dueCards'
 import { previewReviewIntervals } from '../../domain/srs/scheduleReview'
 import type { SrsRating } from '../../domain/srs/srsTypes'
 import type { AppSettings } from '../../domain/settings/settingsTypes'
+import type { LimitedStudySelection } from '../../domain/srs/studyLimits'
 import { RatingButtons } from './RatingButtons'
 import { StudyCard } from './StudyCard'
 import styles from './StudySessionScreen.module.css'
@@ -29,11 +30,20 @@ const emptyCounts: SessionCounts = {
   easy: 0,
 }
 
+const emptySelection: Pick<
+  LimitedStudySelection,
+  'hiddenNewCards' | 'hiddenReviews'
+> = {
+  hiddenNewCards: 0,
+  hiddenReviews: 0,
+}
+
 export function StudySessionScreen() {
   const { deckId } = useParams()
   const [items, setItems] = useState<StudyItem[]>([])
   const [deckSummary, setDeckSummary] = useState<DeckSummary>()
   const [settings, setSettings] = useState<AppSettings>()
+  const [limitedCounts, setLimitedCounts] = useState(emptySelection)
   const [isRevealed, setIsRevealed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
@@ -49,11 +59,21 @@ export function StudySessionScreen() {
     const now = new Date().toISOString()
 
     Promise.all([
-      listDueStudyItems({ now, deckId }),
       getSettings(),
       deckId ? getDeckSummary(deckId) : Promise.resolve(undefined),
     ])
-      .then(([dueItems, nextSettings, nextDeckSummary]) => {
+      .then(async ([nextSettings, nextDeckSummary]) => {
+        const selection = await listLimitedStudyItems({
+          now,
+          deckId,
+          limits: {
+            newCards: nextSettings.dailyNewCardLimit,
+            reviews: nextSettings.dailyReviewLimit,
+          },
+        })
+        return { nextSettings, nextDeckSummary, selection }
+      })
+      .then(({ nextSettings, nextDeckSummary, selection }) => {
         if (!isActive) {
           return
         }
@@ -63,7 +83,11 @@ export function StudySessionScreen() {
           return
         }
 
-        setItems(dueItems)
+        setItems(selection.items)
+        setLimitedCounts({
+          hiddenNewCards: selection.hiddenNewCards,
+          hiddenReviews: selection.hiddenReviews,
+        })
         setSettings(nextSettings)
         setDeckSummary(nextDeckSummary)
         setCardShownAt(Date.now())
@@ -187,6 +211,12 @@ export function StudySessionScreen() {
         <p className={styles.eyebrow}>Session complete</p>
         <h1>Nicely done.</h1>
         <p>You reviewed {reviewedCount} cards.</p>
+        {limitedCounts.hiddenNewCards + limitedCounts.hiddenReviews > 0 ? (
+          <p>
+            Your daily limit is reached. {limitedCounts.hiddenReviews} reviews
+            and {limitedCounts.hiddenNewCards} new cards remain due.
+          </p>
+        ) : null}
         <div className={styles.summaryGrid}>
           {(['again', 'hard', 'good', 'easy'] as SrsRating[]).map((rating) => (
             <article key={rating}>
@@ -201,14 +231,20 @@ export function StudySessionScreen() {
   }
 
   if (!currentItem) {
+    const isLimited =
+      limitedCounts.hiddenNewCards + limitedCounts.hiddenReviews > 0
     return (
       <section className={styles.emptyState}>
-        <p className={styles.eyebrow}>All caught up</p>
-        <h1>No cards are due.</h1>
+        <p className={styles.eyebrow}>
+          {isLimited ? 'Daily limit reached' : 'All caught up'}
+        </p>
+        <h1>{isLimited ? 'Study complete for today.' : 'No cards are due.'}</h1>
         <p>
-          {deckSummary
-            ? `${deckSummary.deck.name} has nothing scheduled right now.`
-            : 'Your active decks have nothing scheduled right now.'}
+          {isLimited
+            ? `${limitedCounts.hiddenReviews} reviews and ${limitedCounts.hiddenNewCards} new cards remain due. Change the global limits in Settings if needed.`
+            : deckSummary
+              ? `${deckSummary.deck.name} has nothing scheduled right now.`
+              : 'Your active decks have nothing scheduled right now.'}
         </p>
         <Link to={deckId ? `/decks/${deckId}` : '/'}>Go back</Link>
       </section>

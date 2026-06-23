@@ -3,6 +3,13 @@ import type { StudyItem } from '../../domain/srs/dueCards'
 import type { SourceImage } from '../../domain/media/mediaTypes'
 import { isStudyItemDue } from '../../domain/srs/dueCards'
 import { scheduleReview } from '../../domain/srs/scheduleReview'
+import {
+  applyDailyStudyLimits,
+  type DailyStudyLimits,
+  type DailyStudyUsage,
+  type LimitedStudySelection,
+} from '../../domain/srs/studyLimits'
+import { getLocalDayBounds } from '../../utils/dates'
 import { createId } from '../../utils/ids'
 import { db } from '../dexie'
 
@@ -110,6 +117,42 @@ export async function countDueCards(
   deckId?: string,
 ): Promise<number> {
   return (await listDueStudyItems({ now, deckId })).length
+}
+
+export async function listLimitedStudyItems({
+  now,
+  deckId,
+  limits,
+}: DueStudyOptions & {
+  limits: DailyStudyLimits
+}): Promise<LimitedStudySelection> {
+  const [items, usage] = await Promise.all([
+    listDueStudyItems({ now, deckId }),
+    getDailyStudyUsage(new Date(now)),
+  ])
+  return applyDailyStudyLimits(items, usage, limits)
+}
+
+export async function getDailyStudyUsage(
+  now: Date,
+): Promise<DailyStudyUsage> {
+  const bounds = getLocalDayBounds(now)
+  const logs = await db.reviewLogs
+    .where('reviewedAt')
+    .between(bounds.start, bounds.end, true, false)
+    .toArray()
+
+  return logs.reduce<DailyStudyUsage>(
+    (usage, log) => {
+      if (log.previousIntervalDays === 0) {
+        usage.newCards += 1
+      } else {
+        usage.reviews += 1
+      }
+      return usage
+    },
+    { newCards: 0, reviews: 0 },
+  )
 }
 
 export async function submitReview({
