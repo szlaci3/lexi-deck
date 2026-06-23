@@ -3,11 +3,11 @@ export type TargetLanguage = 'nl'
 
 export const myLanguageLabels: Record<MyLanguage, string> = {
   en: 'English',
-  'zh-Hans': 'Chinese',
+  'zh-Hans': '中文',
 }
 
 export const targetLanguageLabels: Record<TargetLanguage, string> = {
-  nl: 'Dutch',
+  nl: '荷兰语',
 }
 
 export type Deck = {

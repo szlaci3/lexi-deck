@@ -2,8 +2,8 @@ export type SrsRating = 'again' | 'hard' | 'good' | 'easy'
 export type StudyRating = Extract<SrsRating, 'hard' | 'easy'>
 
 export const srsRatingLabels: Record<StudyRating, string> = {
-  hard: 'Hard',
-  easy: 'Easy',
+  hard: '不会',
+  easy: '会',
 }
 
 export type ReviewState = {

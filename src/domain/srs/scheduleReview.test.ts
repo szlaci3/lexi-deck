@@ -32,7 +32,7 @@ describe('scheduleReview', () => {
       reviewedAt,
     })
 
-    expect(result.intervalLabel).toBe('10 min')
+    expect(result.intervalLabel).toBe('10分钟')
     expect(result.reviewState.dueAt).toBe('2026-06-22T12:10:00.000Z')
     expect(result.reviewState.intervalDays).toBeCloseTo(10 / 1440)
     expect(result.reviewState.lapses).toBe(1)
@@ -45,7 +45,7 @@ describe('scheduleReview', () => {
       reviewedAt,
     })
 
-    expect(result.intervalLabel).toBe('1 day')
+    expect(result.intervalLabel).toBe('1 天')
     expect(result.reviewState.dueAt).toBe('2026-06-23T12:00:00.000Z')
     expect(result.reviewState.intervalDays).toBe(1)
     expect(result.reviewState.lapses).toBe(0)
@@ -55,12 +55,12 @@ describe('scheduleReview', () => {
     const previews = previewReviewIntervals(reviewState(), reviewedAt)
 
     expect(Object.keys(previews)).toEqual(['hard', 'easy'])
-    expect(previews.hard.intervalLabel).toBe('10 min')
-    expect(previews.easy.intervalLabel).toBe('1 day')
+    expect(previews.hard.intervalLabel).toBe('10分钟')
+    expect(previews.easy.intervalLabel).toBe('1 天')
   })
 
   it('formats singular and plural day intervals', () => {
-    expect(formatInterval(1)).toBe('1 day')
-    expect(formatInterval(3)).toBe('3 days')
+    expect(formatInterval(1)).toBe('1 天')
+    expect(formatInterval(3)).toBe('3 天')
   })
 })

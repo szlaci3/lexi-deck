@@ -4,15 +4,15 @@ import type { StudyRating } from '../../domain/srs/srsTypes'
 import { RatingButtons } from './RatingButtons'
 
 describe('RatingButtons', () => {
-  it('renders exactly Hard and Easy with their fixed intervals', () => {
+  it('只显示“不会”和“会”以及固定间隔', () => {
     const previews = {
       hard: {
         reviewState: {} as never,
-        intervalLabel: '10 min',
+        intervalLabel: '10分钟',
       },
       easy: {
         reviewState: {} as never,
-        intervalLabel: '1 day',
+        intervalLabel: '1 天',
       },
     } satisfies Record<
       StudyRating,
@@ -31,10 +31,10 @@ describe('RatingButtons', () => {
     )
 
     expect(markup.match(/<button/g)).toHaveLength(2)
-    expect(markup).toContain('Hard')
-    expect(markup).toContain('10 min')
-    expect(markup).toContain('Easy')
-    expect(markup).toContain('1 day')
+    expect(markup).toContain('不会')
+    expect(markup).toContain('10分钟')
+    expect(markup).toContain('会')
+    expect(markup).toContain('1 天')
     expect(markup).not.toContain('Again')
     expect(markup).not.toContain('Good')
   })

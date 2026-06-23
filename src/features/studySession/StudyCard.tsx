@@ -68,7 +68,7 @@ export function StudyCard({
 
       {!isRevealed ? (
         <button className={styles.revealButton} type="button" onClick={onReveal}>
-          Reveal answer
+          显示答案
         </button>
       ) : (
         <div className={styles.answer}>
@@ -97,7 +97,7 @@ export function StudyCard({
                 item.card,
               )}`}
             >
-              {isPlayingAudio ? 'Playing…' : 'Play Dutch audio'}
+              {isPlayingAudio ? '播放中...' : '重播'}
             </button>
           ) : null}
           {audioError && presentation.dutchOnAnswer ? (
@@ -126,7 +126,7 @@ function formatLanguageLabel(
   language: 'myLanguage' | 'dutch' | 'image',
   myLanguageLabel: string,
 ): string {
-  if (language === 'dutch') return 'Dutch'
+  if (language === 'dutch') return '荷兰语'
   if (language === 'image') return 'Image'
   return myLanguageLabel
 }

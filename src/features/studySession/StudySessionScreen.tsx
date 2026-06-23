@@ -304,14 +304,14 @@ export function StudySessionScreen({
         <div>
           <p className={styles.eyebrow}>
             {lesson
-              ? `${lesson.title} · ${mode === 'all' ? 'Study all' : 'Study due'}`
+              ? `${lesson.title} · ${mode === 'all' ? '学习全部' : '学习到期 (Due)'}`
               : deckSummary
                 ? deckSummary.deck.name
                 : 'All decks'}
           </p>
-          <h1>Study session</h1>
+          <h1>学习</h1>
         </div>
-        <span>{items.length} remaining</span>
+        <span>剩余 {items.length} 张</span>
       </header>
 
       <StudyCard

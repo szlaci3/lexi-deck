@@ -52,11 +52,11 @@ export function previewReviewIntervals(
 
 export function formatInterval(intervalDays: number): string {
   if (intervalDays < 1) {
-    return `${Math.round(intervalDays * minutesPerDay)} min`
+    return `${Math.round(intervalDays * minutesPerDay)}分钟`
   }
 
   const days = Math.round(intervalDays)
-  return `${days} ${days === 1 ? 'day' : 'days'}`
+  return `${days} ${days === 1 ? '天' : '天'}`
 }
 
 function addInterval(reviewedAt: string, intervalDays: number): string {
