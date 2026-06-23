@@ -17,6 +17,7 @@ import { validateImportBundle } from '../../domain/importExport/validateImportBu
 import { nowIso } from '../../utils/dates'
 import { createId } from '../../utils/ids'
 import { db } from '../dexie'
+import type { ExportableCard } from '../../domain/importExport/cardTextExport'
 
 const tables = [
   db.decks,
@@ -140,6 +141,44 @@ export async function getDatabaseSummary(): Promise<ImportSummary> {
     settings: counts[5],
     knownWords: counts[6],
   }
+}
+
+export async function listExportableCards(): Promise<ExportableCard[]> {
+  const [cards, decks, lessons, sourceImages] = await Promise.all([
+    db.cards.filter((card) => !card.archivedAt).toArray(),
+    db.decks.filter((deck) => !deck.archivedAt).toArray(),
+    db.lessons.filter((lesson) => !lesson.archivedAt).toArray(),
+    db.sourceImages.toArray(),
+  ])
+  const deckById = new Map(decks.map((deck) => [deck.id, deck]))
+  const lessonById = new Map(lessons.map((lesson) => [lesson.id, lesson]))
+  const imageById = new Map(sourceImages.map((image) => [image.id, image]))
+
+  return cards
+    .flatMap((card): ExportableCard[] => {
+      const deck = deckById.get(card.deckId)
+      const lesson = lessonById.get(card.lessonId)
+      if (!deck || !lesson || lesson.deckId !== deck.id) {
+        return []
+      }
+
+      return [
+        {
+          card,
+          deck,
+          lesson,
+          imageFileName: card.frontImageId
+            ? imageById.get(card.frontImageId)?.fileName
+            : undefined,
+        },
+      ]
+    })
+    .sort(
+      (left, right) =>
+        left.deck.name.localeCompare(right.deck.name) ||
+        left.lesson.order - right.lesson.order ||
+        left.card.createdAt.localeCompare(right.card.createdAt),
+    )
 }
 
 async function addBundle(bundle: ExportBundleV1): Promise<void> {

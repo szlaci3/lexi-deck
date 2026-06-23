@@ -2,6 +2,7 @@ import { AdditiveImportPanel } from './AdditiveImportPanel'
 import styles from './DataManagementScreen.module.css'
 import { ExportDatabasePanel } from './ExportDatabasePanel'
 import { ImportDatabasePanel } from './ImportDatabasePanel'
+import { CardTextExportPanel } from './CardTextExportPanel'
 
 export function DataManagementScreen() {
   return (
@@ -11,6 +12,7 @@ export function DataManagementScreen() {
         <h1>Your data stays yours.</h1>
         <span>
           Back up, restore, or safely combine local LexiDeck databases.
+          Export selected cards for spreadsheets or Anki when needed.
         </span>
       </header>
 
@@ -18,6 +20,7 @@ export function DataManagementScreen() {
         <ExportDatabasePanel />
         <ImportDatabasePanel />
         <AdditiveImportPanel />
+        <CardTextExportPanel />
       </div>
     </div>
   )
