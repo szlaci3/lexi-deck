@@ -45,7 +45,7 @@ describe('scheduleReview', () => {
       reviewedAt,
     })
 
-    expect(result.intervalLabel).toBe('1 天')
+    expect(result.intervalLabel).toBe('1天')
     expect(result.reviewState.dueAt).toBe('2026-06-23T12:00:00.000Z')
     expect(result.reviewState.intervalDays).toBe(1)
     expect(result.reviewState.lapses).toBe(0)
@@ -56,11 +56,11 @@ describe('scheduleReview', () => {
 
     expect(Object.keys(previews)).toEqual(['hard', 'easy'])
     expect(previews.hard.intervalLabel).toBe('10分钟')
-    expect(previews.easy.intervalLabel).toBe('1 天')
+    expect(previews.easy.intervalLabel).toBe('1天')
   })
 
   it('formats singular and plural day intervals', () => {
-    expect(formatInterval(1)).toBe('1 天')
-    expect(formatInterval(3)).toBe('3 天')
+    expect(formatInterval(1)).toBe('1天')
+    expect(formatInterval(3)).toBe('3天')
   })
 })

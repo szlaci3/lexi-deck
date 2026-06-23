@@ -56,7 +56,7 @@ export function formatInterval(intervalDays: number): string {
   }
 
   const days = Math.round(intervalDays)
-  return `${days} ${days === 1 ? '天' : '天'}`
+  return `${days}${days === 1 ? '天' : '天'}`
 }
 
 function addInterval(reviewedAt: string, intervalDays: number): string {
